@@ -1,0 +1,12 @@
+# Exported from Render on 2025-03-11T02:47:26Z
+databases:
+- name: linha_do_tempo
+  databaseName: linha_do_tempo
+  user: linha_do_tempo_user
+  plan: free
+  region: oregon
+  ipAllowList:
+  - source: 0.0.0.0/0
+    description: everywhere
+  postgresMajorVersion: "16"
+version: "1"
