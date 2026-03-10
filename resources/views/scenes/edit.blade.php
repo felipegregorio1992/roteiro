@@ -31,6 +31,17 @@
                         </div>
 
                         <div>
+                            <x-input-label for="scene_type" value="Tipo de Cena" />
+                            <select id="scene_type" name="scene_type" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                <option value="">Selecione...</option>
+                                <option value="INT" {{ old('scene_type', $scene->scene_type) == 'INT' ? 'selected' : '' }}>INT. (Interna)</option>
+                                <option value="EXT" {{ old('scene_type', $scene->scene_type) == 'EXT' ? 'selected' : '' }}>EXT. (Externa)</option>
+                                <option value="INT/EXT" {{ old('scene_type', $scene->scene_type) == 'INT/EXT' ? 'selected' : '' }}>INT./EXT.</option>
+                            </select>
+                            <x-input-error :messages="$errors->get('scene_type')" class="mt-2" />
+                        </div>
+
+                        <div>
                             <x-input-label for="description" value="Descrição" />
                             <textarea id="description" name="description" 
                                       class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"

@@ -5,15 +5,23 @@ namespace App\Http\Controllers;
 use App\Models\Character;
 use App\Models\Scene;
 use App\Models\Project;
+use App\Services\CacheService;
+use App\Services\CharacterService;
+use App\Http\Requests\CreateCharacterRequest;
+use App\Http\Requests\UpdateCharacterRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
-class CharacterController extends Controller
+class CharacterController extends BaseController
 {
     use AuthorizesRequests;
+
+    public function __construct(
+        protected CharacterService $characterService
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -26,75 +34,20 @@ class CharacterController extends Controller
             return redirect()->route('login');
         }
 
-        // Verifica se um projeto foi especificado
-        $projectId = $request->query('project');
-        if (!$projectId) {
-            return redirect()->route('projects.index')
-                ->with('error', 'Por favor, selecione um projeto.');
+        $project = $this->getProjectOrRedirect($request);
+        if ($project instanceof \Illuminate\Http\RedirectResponse) {
+            return $project;
         }
 
-        // Carrega o projeto
-        $project = Project::findOrFail($projectId);
-        
-        // Verifica se o usuário tem acesso ao projeto
-        if ($project->user_id !== $user->id) {
-            abort(403, 'Você não tem permissão para acessar este projeto.');
-        }
+        // Autorização via Policy
+        $this->authorize('view', $project);
 
-        // Busca os personagens do projeto específico
-        $characters = Character::where('user_id', $user->id)
-            ->where('project_id', $projectId)
-            ->with(['scenes' => function($query) {
-                $query->orderBy('order', 'asc');
-            }])
-            ->get();
+        // Busca os personagens usando cache otimizado
+        $characters = CacheService::getProjectCharacters($project->id, $user->id);
 
+        // Processar conteúdo dos atos para cada personagem
         foreach ($characters as $character) {
-            // Buscar todas as cenas do personagem do projeto atual
-            $scenes = Scene::whereHas('characters', function($query) use ($character) {
-                $query->where('characters.id', $character->id);
-            })
-            ->where('project_id', $projectId)
-            ->orderBy('order', 'asc')
-            ->get()
-            ->groupBy(function($scene) {
-                if (preg_match('/Ato (\d+)/', $scene->title, $matches)) {
-                    return (int) $matches[1];
-                }
-                return 0; // Para cenas sem número de ato
-            });
-
-            // Organizar o conteúdo por ato
-            $actContents = [];
-            
-            // Iterar sobre os atos (1 a 30)
-            for ($act = 1; $act <= 30; $act++) {
-                if (isset($scenes[$act])) {
-                    $actContent = '';
-                    foreach ($scenes[$act] as $scene) {
-                        // Buscar o diálogo específico deste personagem para esta cena
-                        $dialogue = DB::table('character_scene')
-                            ->where('character_id', $character->id)
-                            ->where('scene_id', $scene->id)
-                            ->value('dialogue');
-
-                        if (!empty($dialogue)) {
-                            if (!empty($actContent)) {
-                                $actContent .= "\n\n";
-                            }
-                            $actContent .= $dialogue;
-                        } elseif (!empty($scene->description)) {
-                            if (!empty($actContent)) {
-                                $actContent .= "\n\n";
-                            }
-                            $actContent .= $scene->description;
-                        }
-                    }
-                    $actContents[$act] = $actContent;
-                }
-            }
-
-            $character->act_contents = $actContents;
+            $character->act_contents = $this->characterService->getCharacterActContents($character, $project->id);
         }
 
         return view('characters.index', compact('characters', 'project'));
@@ -105,19 +58,13 @@ class CharacterController extends Controller
      */
     public function create(Request $request)
     {
-        $projectId = $request->query('project');
-        if (!$projectId) {
-            return redirect()->route('projects.index')
-                ->with('error', 'Por favor, selecione um projeto.');
+        $project = $this->getProjectOrRedirect($request);
+        if ($project instanceof \Illuminate\Http\RedirectResponse) {
+            return $project;
         }
-
-        // Carrega o projeto
-        $project = Project::findOrFail($projectId);
         
-        // Verifica se o usuário tem acesso ao projeto
-        if ($project->user_id !== Auth::id()) {
-            abort(403, 'Você não tem permissão para acessar este projeto.');
-        }
+        // Autorização via Policy
+        $this->authorize('view', $project);
 
         return view('characters.create', compact('project'));
     }
@@ -125,40 +72,13 @@ class CharacterController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateCharacterRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|max:255',
-            'description' => 'required',
-            'role' => 'required|max:255',
-            'type' => 'nullable|max:255',
-            'goals' => 'nullable',
-            'fears' => 'nullable',
-            'history' => 'nullable',
-            'personality' => 'nullable',
-            'notes' => 'nullable',
-            'project_id' => 'required|exists:projects,id'
-        ]);
+        $validated = $request->validated();
 
-        // Verifica se o usuário tem acesso ao projeto
-        $project = Project::findOrFail($validated['project_id']);
-        if ($project->user_id !== Auth::id()) {
-            abort(403, 'Você não tem permissão para acessar este projeto.');
-        }
+        $character = $this->characterService->createCharacter($validated);
 
-        $character = Character::create([
-            'user_id' => Auth::id(),
-            'project_id' => $validated['project_id'],
-            'name' => $validated['name'],
-            'description' => $validated['description'],
-            'role' => $validated['role'],
-            'type' => $validated['type'],
-            'goals' => $validated['goals'],
-            'fears' => $validated['fears'],
-            'history' => $validated['history'],
-            'personality' => $validated['personality'],
-            'notes' => $validated['notes']
-        ]);
+        $this->logActivity('Character created', ['character_id' => $character->id]);
 
         return redirect()->route('characters.show', ['character' => $character, 'project' => $validated['project_id']])
             ->with('success', 'Personagem criado com sucesso!');
@@ -171,24 +91,14 @@ class CharacterController extends Controller
     {
         $this->authorize('view', $character);
         
-        // Verifica se um projeto foi especificado
-        $projectId = $request->query('project');
-        if (!$projectId) {
-            return redirect()->route('projects.index')
-                ->with('error', 'Por favor, selecione um projeto.');
+        $project = $this->getProjectOrRedirect($request);
+        if ($project instanceof \Illuminate\Http\RedirectResponse) {
+            return $project;
         }
 
         // Verifica se o personagem pertence ao projeto
-        if ($character->project_id != $projectId) {
+        if ($character->project_id != $project->id) {
             abort(404, 'Personagem não encontrado neste projeto.');
-        }
-
-        // Carrega o projeto
-        $project = Project::findOrFail($projectId);
-        
-        // Verifica se o usuário tem acesso ao projeto
-        if ($project->user_id !== Auth::id()) {
-            abort(403, 'Você não tem permissão para acessar este projeto.');
         }
         
         // Carrega as cenas ordenadas
@@ -206,24 +116,14 @@ class CharacterController extends Controller
     {
         $this->authorize('update', $character);
 
-        // Verifica se um projeto foi especificado
-        $projectId = $request->query('project');
-        if (!$projectId) {
-            return redirect()->route('projects.index')
-                ->with('error', 'Por favor, selecione um projeto.');
+        $project = $this->getProjectOrRedirect($request);
+        if ($project instanceof \Illuminate\Http\RedirectResponse) {
+            return $project;
         }
 
         // Verifica se o personagem pertence ao projeto
-        if ($character->project_id != $projectId) {
+        if ($character->project_id != $project->id) {
             abort(404, 'Personagem não encontrado neste projeto.');
-        }
-
-        // Carrega o projeto
-        $project = Project::findOrFail($projectId);
-        
-        // Verifica se o usuário tem acesso ao projeto
-        if ($project->user_id !== Auth::id()) {
-            abort(403, 'Você não tem permissão para acessar este projeto.');
         }
 
         return view('characters.edit', compact('character', 'project'));
@@ -232,45 +132,15 @@ class CharacterController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Character $character)
+    public function update(UpdateCharacterRequest $request, Character $character)
     {
         $this->authorize('update', $character);
 
-        $validated = $request->validate([
-            'name' => 'required|max:255',
-            'description' => 'required',
-            'role' => 'required|max:255',
-            'type' => 'nullable|max:255',
-            'goals' => 'nullable',
-            'fears' => 'nullable',
-            'history' => 'nullable',
-            'personality' => 'nullable',
-            'notes' => 'nullable',
-            'project_id' => 'required|exists:projects,id'
-        ]);
+        $validated = $request->validated();
 
-        // Verifica se o usuário tem acesso ao projeto
-        $project = Project::findOrFail($validated['project_id']);
-        if ($project->user_id !== Auth::id()) {
-            abort(403, 'Você não tem permissão para acessar este projeto.');
-        }
+        $this->characterService->updateCharacter($character, $validated);
 
-        // Verifica se o personagem pertence ao projeto
-        if ($character->project_id != $validated['project_id']) {
-            abort(404, 'Personagem não encontrado neste projeto.');
-        }
-
-        $character->update([
-            'name' => $validated['name'],
-            'description' => $validated['description'],
-            'role' => $validated['role'],
-            'type' => $validated['type'],
-            'goals' => $validated['goals'],
-            'fears' => $validated['fears'],
-            'history' => $validated['history'],
-            'personality' => $validated['personality'],
-            'notes' => $validated['notes']
-        ]);
+        $this->logActivity('Character updated', ['character_id' => $character->id]);
 
         return redirect()->route('characters.show', ['character' => $character, 'project' => $validated['project_id']])
             ->with('success', 'Personagem atualizado com sucesso!');
@@ -283,23 +153,90 @@ class CharacterController extends Controller
     {
         $this->authorize('delete', $character);
 
-        // Verifica se um projeto foi especificado
+        $project = $this->getProjectOrRedirect($request);
+        if ($project instanceof \Illuminate\Http\RedirectResponse) {
+            return $project;
+        }
+
+        // Verifica se o personagem pertence ao projeto
+        if ($character->project_id != $project->id) {
+            abort(404, 'Personagem não encontrado neste projeto.');
+        }
+
+        $this->characterService->deleteCharacter($character);
+        
+        $this->logActivity('Character deleted', ['character_id' => $character->id]);
+
+        return redirect()->route('characters.index', ['project' => $project->id])
+            ->with('success', 'Personagem excluído com sucesso!');
+    }
+
+    /**
+     * Remove dialogue from a scene for this character (soft delete/hide)
+     */
+    public function removeDialogue(Character $character, Scene $scene, Request $request)
+    {
+        $this->authorize('update', $character);
+
+        $project = $this->getProjectOrRedirect($request);
+        if ($project instanceof \Illuminate\Http\RedirectResponse) {
+            return $project;
+        }
+
+        // Verifica se o personagem e a cena pertencem ao projeto
+        if ($character->project_id != $project->id || $scene->project_id != $project->id) {
+            abort(404, 'Personagem ou cena não encontrada neste projeto.');
+        }
+
+        // Atualiza o pivot ocultando o diálogo em vez de apagar
+        $character->scenes()->updateExistingPivot($scene->id, ['is_hidden' => true]);
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Diálogo ocultado com sucesso!']);
+        }
+
+        return back()->with('success', 'Diálogo ocultado com sucesso!');
+    }
+
+    /**
+     * Restore hidden dialogue
+     */
+    public function restoreDialogue(Character $character, Scene $scene, Request $request)
+    {
+        $this->authorize('update', $character);
+        
+        $project = $this->getProjectOrRedirect($request);
+        if ($project instanceof \Illuminate\Http\RedirectResponse) {
+            return $project;
+        }
+
+        $character->scenes()->updateExistingPivot($scene->id, ['is_hidden' => false]);
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Diálogo restaurado com sucesso!']);
+        }
+
+        return back()->with('success', 'Diálogo restaurado com sucesso!');
+    }
+
+    /**
+     * Helper to get project from request or return redirect
+     */
+    private function getProjectOrRedirect(Request $request)
+    {
         $projectId = $request->query('project');
         if (!$projectId) {
             return redirect()->route('projects.index')
                 ->with('error', 'Por favor, selecione um projeto.');
         }
 
-        // Verifica se o personagem pertence ao projeto
-        if ($character->project_id != $projectId) {
-            abort(404, 'Personagem não encontrado neste projeto.');
+        // Use validateProjectAccess from BaseController which checks ownership
+        // Note: validateProjectAccess returns Project model or aborts
+        try {
+            return $this->validateProjectAccess($projectId, Auth::id());
+        } catch (\Exception $e) {
+            // If it's a 403 abort, we might want to handle it or let it bubble
+            throw $e;
         }
-
-        // Remove o personagem e suas relações
-        $character->scenes()->detach();
-        $character->delete();
-
-        return redirect()->route('characters.index', ['project' => $projectId])
-            ->with('success', 'Personagem excluído com sucesso!');
     }
 }

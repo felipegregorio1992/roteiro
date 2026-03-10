@@ -23,7 +23,12 @@
                         <div class="flex justify-between items-start">
                             <div>
                                 <h3 class="text-2xl font-bold text-gray-900">{{ $scene->title }}</h3>
-                                <p class="text-gray-500">Duração: {{ $scene->duration }} minutos</p>
+                                <p class="text-gray-500">
+                                    @if($scene->scene_type)
+                                        <span class="font-semibold text-indigo-600">{{ $scene->scene_type }}</span> | 
+                                    @endif
+                                    Duração: {{ $scene->duration }} minutos
+                                </p>
                             </div>
                             <div class="flex gap-2">
                                 <a href="{{ route('scenes.edit', ['scene' => $scene, 'project' => $project->id]) }}" 
@@ -64,9 +69,6 @@
                                                     </h4>
                                                     <span class="text-sm text-gray-500">{{ $character->role }}</span>
                                                 </div>
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                                    {{ $character->type }}
-                                                </span>
                                             </div>
                                             @if($character->pivot->dialogue)
                                                 <div class="mt-2 bg-white rounded p-4">

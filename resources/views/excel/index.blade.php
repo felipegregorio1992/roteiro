@@ -8,7 +8,7 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
+                <div class="p-6" x-data="{ type: 'script' }">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Instruções para Importação</h3>
                     
                     <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
@@ -26,37 +26,46 @@
                         </div>
                     </div>
 
-                    <div class="bg-gray-50 rounded-lg p-4 mb-6">
-                        <h4 class="font-medium text-gray-700 mb-2">Estrutura do Excel:</h4>
-                        <div class="space-y-2 text-sm text-gray-600">
-                            <p>Coluna A: Nome do Personagem</p>
-                            <p>Coluna B: Título da Cena (deve incluir "Ato X" no início)</p>
-                            <p>Coluna C: Diálogo do Personagem na Cena</p>
+                    <div>
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Selecione o Tipo de Importação</label>
+                            <div class="space-y-2">
+                                <div class="flex items-center">
+                                    <input id="import_script" name="import_type" type="radio" value="script" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" x-model="type">
+                                    <label for="import_script" class="ml-3 block text-sm font-medium text-gray-700">
+                                        Roteiro (Personagem, Cena, Diálogo)
+                                    </label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input id="import_story_matrix" name="import_type" type="radio" value="story_matrix" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" x-model="type">
+                                    <label for="import_story_matrix" class="ml-3 block text-sm font-medium text-gray-700">
+                                        Resumo por Ato (Matriz de Personagens x Atos)
+                                    </label>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <div class="mt-4">
-                            <h5 class="font-medium text-gray-700 mb-2">Exemplo:</h5>
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-100">
-                                    <tr>
-                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Personagem</th>
-                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Cena</th>
-                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Diálogo</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    <tr>
-                                        <td class="px-4 py-2 text-sm text-gray-600">João</td>
-                                        <td class="px-4 py-2 text-sm text-gray-600">Ato 1 - Chegada</td>
-                                        <td class="px-4 py-2 text-sm text-gray-600">Olá, como vai?</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-4 py-2 text-sm text-gray-600">Maria</td>
-                                        <td class="px-4 py-2 text-sm text-gray-600">Ato 1 - Chegada</td>
-                                        <td class="px-4 py-2 text-sm text-gray-600">Tudo bem, e você?</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+
+                        <!-- Instructions for Script -->
+                        <div x-show="type === 'script'" class="bg-gray-50 rounded-lg p-4 mb-6">
+                            <h4 class="font-medium text-gray-700 mb-2">Estrutura do Excel (Roteiro):</h4>
+                            <div class="space-y-2 text-sm text-gray-600">
+                                <p>Coluna A: Nome do Personagem</p>
+                                <p>Coluna B: Título da Cena (deve incluir "Ato X" no início)</p>
+                                <p>Coluna C: Diálogo do Personagem na Cena</p>
+                            </div>
+                        </div>
+
+                        <!-- Instructions for Story Matrix -->
+                        <div x-show="type === 'story_matrix'" class="bg-blue-50 rounded-lg p-4 mb-6" style="display: none;">
+                            <h4 class="font-medium text-blue-800 mb-2">Estrutura do Excel (Resumo por Ato):</h4>
+                            <div class="space-y-2 text-sm text-blue-700">
+                                <p>Coluna A: Nome do Personagem</p>
+                                <p>Colunas Seguintes: Ato 1, Ato 2, etc. (O sistema detecta automaticamente)</p>
+                                <p>Conteúdo: Resumo do que acontece com o personagem naquele ato.</p>
+                            </div>
+                            <div class="mt-2 text-xs text-blue-600">
+                                * Se o arquivo tiver uma linha de cabeçalho com "Personagem", "Ato 1", etc., o sistema a usará. Caso contrário, assumirá a primeira linha.
+                            </div>
                         </div>
                     </div>
 
@@ -85,6 +94,8 @@
                     <form action="{{ route('excel.import') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                         @csrf
                         
+                        <input type="hidden" name="import_type" x-bind:value="type">
+
                         <div>
                             <label for="project_id" class="block text-sm font-medium text-gray-700">Selecione o Projeto</label>
                             <select name="project_id" id="project_id" required

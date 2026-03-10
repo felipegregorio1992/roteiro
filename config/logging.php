@@ -127,6 +127,63 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        // Canais personalizados para o sistema de roteiros
+        'activities' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/activities.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
+        'validation' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/validation.log'),
+            'level' => env('LOG_LEVEL', 'warning'),
+            'days' => 14,
+            'replace_placeholders' => true,
+        ],
+
+        'files' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/files.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
+        'performance' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/performance.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => 7,
+            'replace_placeholders' => true,
+        ],
+
+        'security' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/security.log'),
+            'level' => env('LOG_LEVEL', 'warning'),
+            'days' => 90,
+            'replace_placeholders' => true,
+        ],
+
+        'backup' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/backup.log'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
+        'cache' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/cache.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => 7,
+            'replace_placeholders' => true,
+        ],
+
     ],
 
 ];

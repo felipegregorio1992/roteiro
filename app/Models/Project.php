@@ -29,4 +29,9 @@ class Project extends Model
     {
         return $this->hasMany(Scene::class);
     }
+
+    public function episodes()
+    {
+        return $this->hasMany(Episode::class);
+    }
 } 

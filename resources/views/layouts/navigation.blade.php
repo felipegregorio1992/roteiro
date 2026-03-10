@@ -1,4 +1,4 @@
-<nav x-data="{ open: false, darkMode: false }" class="bg-white/80 backdrop-blur-sm border-b border-gray-100 dark:bg-gray-800/80 dark:border-gray-700">
+<nav x-data="{ open: false, darkMode: false }" class="bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm dark:bg-gray-800/90 dark:border-gray-700">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -28,7 +28,7 @@
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <button @click="darkMode = !darkMode; document.documentElement.classList.toggle('dark')" 
-                        class="p-1 text-gray-400 hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-full mr-3 dark:hover:text-indigo-400 dark:focus:ring-offset-gray-800">
+                        class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg mr-3 transition-all duration-200 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 dark:focus:ring-offset-gray-800">
                     <span class="sr-only">Alternar modo escuro</span>
                     <svg x-show="!darkMode" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />

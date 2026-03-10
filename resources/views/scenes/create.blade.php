@@ -15,10 +15,17 @@
                     </svg>
                     Exportar Excel
                 </a>
-                <a href="{{ route('scenes.index', ['project' => $project->id]) }}" 
-                   class="text-gray-600 hover:text-gray-900">
-                    Voltar para Lista
-                </a>
+                @if(isset($episodeId))
+                    <a href="{{ route('episodes.show', ['episode' => $episodeId, 'project' => $project->id]) }}" 
+                       class="text-gray-600 hover:text-gray-900">
+                        Voltar para Episódio
+                    </a>
+                @else
+                    <a href="{{ route('episodes.index', ['project' => $project->id]) }}" 
+                       class="text-gray-600 hover:text-gray-900">
+                        Voltar para Lista
+                    </a>
+                @endif
             </div>
         </div>
     </x-slot>
@@ -38,12 +45,26 @@
                     <form method="POST" action="{{ route('scenes.store') }}" class="space-y-6">
                         @csrf
                         <input type="hidden" name="project_id" value="{{ $project->id }}">
+                        @if(isset($episodeId))
+                            <input type="hidden" name="episode_id" value="{{ $episodeId }}">
+                        @endif
 
                         <div>
                             <x-input-label for="title" value="Título" />
                             <x-text-input id="title" name="title" type="text" class="mt-1 block w-full" 
                                          :value="old('title')" required autofocus />
                             <x-input-error :messages="$errors->get('title')" class="mt-2" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="scene_type" value="Tipo de Cena" />
+                            <select id="scene_type" name="scene_type" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                <option value="">Selecione...</option>
+                                <option value="INT" {{ old('scene_type') == 'INT' ? 'selected' : '' }}>INT. (Interna)</option>
+                                <option value="EXT" {{ old('scene_type') == 'EXT' ? 'selected' : '' }}>EXT. (Externa)</option>
+                                <option value="INT/EXT" {{ old('scene_type') == 'INT/EXT' ? 'selected' : '' }}>INT./EXT.</option>
+                            </select>
+                            <x-input-error :messages="$errors->get('scene_type')" class="mt-2" />
                         </div>
 
                         <div>

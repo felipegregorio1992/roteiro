@@ -14,10 +14,13 @@ class Scene extends Model
     protected $fillable = [
         'user_id',
         'project_id',
+        'episode_id',
         'title',
+        'scene_type',
         'description',
         'duration',
-        'order'
+        'order',
+        'act'
     ];
 
     public function user(): BelongsTo
@@ -30,10 +33,15 @@ class Scene extends Model
         return $this->belongsTo(Project::class);
     }
 
+    public function episode(): BelongsTo
+    {
+        return $this->belongsTo(Episode::class);
+    }
+
     public function characters(): BelongsToMany
     {
-        return $this->belongsToMany(Character::class)
-            ->withPivot('dialogue')
+        return $this->belongsToMany(Character::class, 'character_scene')
+            ->withPivot('dialogue', 'is_hidden')
             ->withTimestamps();
     }
 } 

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Character extends Model
 {
@@ -17,15 +18,13 @@ class Character extends Model
         'description',
         'user_id',
         'project_id',
-        'type',
         'goals',
         'fears',
         'history',
         'personality',
-        'notes'
+        'notes',
+        'act_contents'
     ];
-
-    protected $appends = ['act_contents'];
 
     protected $casts = [
         'act_contents' => 'array'
@@ -44,20 +43,19 @@ class Character extends Model
     public function scenes(): BelongsToMany
     {
         return $this->belongsToMany(Scene::class, 'character_scene')
+            ->withPivot('dialogue', 'is_hidden')
+            ->withTimestamps();
+    }
+
+    public function episodes(): BelongsToMany
+    {
+        return $this->belongsToMany(Episode::class)
             ->withPivot('dialogue')
             ->withTimestamps();
     }
 
-    public function getActContentsAttribute()
+    public function dialogues(): HasMany
     {
-        if (!isset($this->attributes['act_contents'])) {
-            $this->attributes['act_contents'] = [];
-        }
-        return $this->attributes['act_contents'];
+        return $this->hasMany(Dialogue::class);
     }
-
-    public function setActContentsAttribute($value)
-    {
-        $this->attributes['act_contents'] = $value;
-    }
-} 
+}

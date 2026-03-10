@@ -42,13 +42,6 @@
                                 </select>
                                 <x-input-error :messages="$errors->get('role')" class="mt-2" />
                             </div>
-
-                            <div>
-                                <x-input-label for="type" value="Tipo" />
-                                <x-text-input id="type" name="type" type="text" class="mt-1 block w-full" 
-                                             :value="old('type', $character->type)" placeholder="Ex: Humano, Elfo, Androide..." />
-                                <x-input-error :messages="$errors->get('type')" class="mt-2" />
-                            </div>
                         </div>
 
                         <!-- Descrição -->

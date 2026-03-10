@@ -3,17 +3,28 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Http\Requests\CreateProjectRequest;
+use App\Http\Requests\UpdateProjectRequest;
+use App\Services\CacheService;
+use App\Services\ProjectService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
-class ProjectController extends Controller
+class ProjectController extends BaseController
 {
     use AuthorizesRequests;
 
+    protected $projectService;
+
+    public function __construct(ProjectService $projectService)
+    {
+        $this->projectService = $projectService;
+    }
+
     public function index()
     {
-        $projects = Auth::user()->projects()->latest()->get();
+        $projects = CacheService::getUserProjects(Auth::id());
         return view('projects.index', compact('projects'));
     }
 
@@ -22,14 +33,13 @@ class ProjectController extends Controller
         return view('projects.create');
     }
 
-    public function store(Request $request)
+    public function store(CreateProjectRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string'
-        ]);
+        $validated = $request->validated();
 
-        $project = auth()->user()->projects()->create($validated);
+        $project = $this->projectService->createProject($validated);
+
+        $this->logActivity('Project created', ['project_id' => $project->id]);
 
         return redirect()->route('dashboard')
             ->with('success', 'Roteiro criado com sucesso!');
@@ -44,13 +54,15 @@ class ProjectController extends Controller
             ->orderBy('order')
             ->get()
             ->groupBy(function ($scene) {
-                if (preg_match('/Ato (\d+)/', $scene->title, $matches)) {
-                    return 'Ato ' . $matches[1];
-                }
-                return 'Outros';
+                return 'Ato ' . $scene->act;
             });
 
-        return view('projects.show', compact('project', 'scenes'));
+        $episodes = $project->episodes()
+            ->with('characters')
+            ->orderBy('order')
+            ->get();
+
+        return view('projects.show', compact('project', 'scenes', 'episodes'));
     }
 
     public function edit(Project $project)
@@ -59,16 +71,15 @@ class ProjectController extends Controller
         return view('projects.edit', compact('project'));
     }
 
-    public function update(Request $request, Project $project)
+    public function update(UpdateProjectRequest $request, Project $project)
     {
         $this->authorize('update', $project);
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string'
-        ]);
+        $validated = $request->validated();
 
-        $project->update($validated);
+        $this->projectService->updateProject($project, $validated);
+
+        $this->logActivity('Project updated', ['project_id' => $project->id]);
 
         return redirect()->route('dashboard')
             ->with('success', 'Roteiro atualizado com sucesso!');
@@ -78,7 +89,9 @@ class ProjectController extends Controller
     {
         $this->authorize('delete', $project);
 
-        $project->delete();
+        $this->projectService->deleteProject($project);
+
+        $this->logActivity('Project deleted', ['project_id' => $project->id]);
 
         return redirect()->route('dashboard')
             ->with('success', 'Roteiro excluído com sucesso!');
