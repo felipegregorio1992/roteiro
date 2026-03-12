@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::dropIfExists('character_scene');
-        
+
         Schema::create('character_scene', function (Blueprint $table) {
             $table->id();
             $table->foreignId('character_id')->constrained()->onDelete('cascade');

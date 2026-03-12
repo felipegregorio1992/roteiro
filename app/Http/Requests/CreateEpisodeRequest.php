@@ -15,7 +15,7 @@ class CreateEpisodeRequest extends FormRequest
     {
         $projectId = $this->input('project_id');
         $project = Project::find($projectId);
-        
+
         return $project && $project->user_id === Auth::id();
     }
 
@@ -82,7 +82,7 @@ class CreateEpisodeRequest extends FormRequest
      */
     private function sanitizeString(?string $value): ?string
     {
-        if (!$value) {
+        if (! $value) {
             return $value;
         }
 

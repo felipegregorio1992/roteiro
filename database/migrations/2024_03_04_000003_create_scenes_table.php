@@ -33,4 +33,4 @@ return new class extends Migration
         Schema::dropIfExists('character_scene');
         Schema::dropIfExists('scenes');
     }
-}; 
+};

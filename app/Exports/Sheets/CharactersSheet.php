@@ -4,13 +4,13 @@ namespace App\Exports\Sheets;
 
 use App\Models\Project;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithTitle;
-use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class CharactersSheet implements FromCollection, WithHeadings, WithTitle, WithStyles, ShouldAutoSize
+class CharactersSheet implements FromCollection, ShouldAutoSize, WithHeadings, WithStyles, WithTitle
 {
     protected $project;
 

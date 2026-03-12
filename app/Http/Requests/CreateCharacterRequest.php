@@ -16,7 +16,7 @@ class CreateCharacterRequest extends FormRequest
     {
         $projectId = $this->input('project_id');
         $project = Project::find($projectId);
-        
+
         return $project && $project->user_id === Auth::id();
     }
 
@@ -28,7 +28,7 @@ class CreateCharacterRequest extends FormRequest
     public function rules(): array
     {
         $projectId = $this->input('project_id');
-        
+
         return [
             'name' => [
                 'required',
@@ -37,7 +37,7 @@ class CreateCharacterRequest extends FormRequest
                 'min:2',
                 Rule::unique('characters')->where(function ($query) use ($projectId) {
                     return $query->where('project_id', $projectId);
-                })
+                }),
             ],
             'description' => 'required|string|max:2000|min:10',
             'role' => 'required|string|max:255|in:Protagonista,Antagonista,Mentor,Aliado,Personagem',
@@ -46,7 +46,7 @@ class CreateCharacterRequest extends FormRequest
             'history' => 'nullable|string|max:2000',
             'personality' => 'nullable|string|max:1000',
             'notes' => 'nullable|string|max:2000',
-            'project_id' => 'required|exists:projects,id'
+            'project_id' => 'required|exists:projects,id',
         ];
     }
 
@@ -93,7 +93,7 @@ class CreateCharacterRequest extends FormRequest
      */
     private function sanitizeString(?string $value): ?string
     {
-        if (!$value) {
+        if (! $value) {
             return $value;
         }
 

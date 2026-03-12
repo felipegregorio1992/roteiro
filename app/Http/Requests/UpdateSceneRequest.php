@@ -23,7 +23,7 @@ class UpdateSceneRequest extends FormRequest
         }
 
         $project = Project::find($projectId);
-        
+
         return $project && $project->user_id === Auth::id();
     }
 
@@ -45,7 +45,7 @@ class UpdateSceneRequest extends FormRequest
             'dialogues' => 'array',
             'dialogues.*' => 'nullable|string|max:2000',
             'project_id' => 'required|exists:projects,id',
-            'act_number' => 'sometimes|integer|min:1|max:30'
+            'act_number' => 'sometimes|integer|min:1|max:30',
         ];
     }
 
@@ -92,7 +92,7 @@ class UpdateSceneRequest extends FormRequest
      */
     private function sanitizeString(?string $value): ?string
     {
-        if (!$value) {
+        if (! $value) {
             return $value;
         }
 

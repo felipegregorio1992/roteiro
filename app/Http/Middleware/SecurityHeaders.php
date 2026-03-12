@@ -16,21 +16,21 @@ class SecurityHeaders
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
-        
+
         // Headers de segurança essenciais
         $headers = config('security.headers');
         foreach ($headers as $header => $value) {
             $response->headers->set($header, $value);
         }
-        
+
         // Content Security Policy
         $csp = config('security.content_security_policy');
         $cspString = collect($csp)->map(function ($value, $key) {
             return "{$key} {$value}";
         })->implode('; ');
-        
+
         $response->headers->set('Content-Security-Policy', $cspString);
-        
+
         return $response;
     }
 }

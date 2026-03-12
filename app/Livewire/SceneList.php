@@ -11,8 +11,9 @@ use Livewire\Component;
 class SceneList extends Component
 {
     public Project $project;
-    
+
     public $expandedSceneId = null;
+
     public $editingDialogues = [];
 
     protected $listeners = ['refreshComponent' => '$refresh'];
@@ -45,16 +46,16 @@ class SceneList extends Component
 
     public function saveDialogue($sceneId, $characterId)
     {
-        if (!isset($this->editingDialogues[$characterId])) {
+        if (! isset($this->editingDialogues[$characterId])) {
             return;
         }
 
         $scene = Scene::find($sceneId);
         if ($scene && $scene->project_id === $this->project->id) {
             $scene->characters()->updateExistingPivot($characterId, [
-                'dialogue' => $this->editingDialogues[$characterId]
+                'dialogue' => $this->editingDialogues[$characterId],
             ]);
-            
+
             // Opcional: Notificação de sucesso
             $this->dispatch('notify', 'Diálogo salvo!');
         }
@@ -70,7 +71,7 @@ class SceneList extends Component
         foreach ($groupedActs as $actNumber => $actData) {
             $acts[$actNumber] = [
                 'title' => $actData['title'],
-                'scenes' => []
+                'scenes' => [],
             ];
 
             foreach ($actData['scenes'] as $scene) {
@@ -80,19 +81,19 @@ class SceneList extends Component
                     'description' => $scene->description,
                     'duration' => $scene->duration,
                     'order' => $scene->order,
-                    'characters' => $scene->characters->map(function($character) {
+                    'characters' => $scene->characters->map(function ($character) {
                         return [
                             'id' => $character->id,
                             'name' => $character->name,
-                            'dialogue' => $character->pivot->dialogue ?? ''
+                            'dialogue' => $character->pivot->dialogue ?? '',
                         ];
-                    })->toArray()
+                    })->toArray(),
                 ];
             }
         }
 
         return view('livewire.scene-list', [
-            'acts' => $acts
+            'acts' => $acts,
         ]);
     }
 
@@ -102,8 +103,8 @@ class SceneList extends Component
 
         foreach ($groups as $group) {
             $actNumber = $group['value'];
-            
-            if (!isset($group['items'])) {
+
+            if (! isset($group['items'])) {
                 continue;
             }
 
@@ -111,7 +112,7 @@ class SceneList extends Component
             foreach ($group['items'] as $item) {
                 $scenesData[] = [
                     'id' => $item['value'],
-                    'order' => $item['order']
+                    'order' => $item['order'],
                 ];
             }
 
@@ -121,25 +122,29 @@ class SceneList extends Component
 
     public function moveActUp($actNumber)
     {
-        if ($actNumber <= 1) return;
-        
+        if ($actNumber <= 1) {
+            return;
+        }
+
         $prevAct = $actNumber - 1;
-        
+
         app(SceneService::class)->swapActs($this->project->id, $actNumber, $prevAct);
-        
+
         $this->dispatch('notify', 'Ato movido com sucesso!');
     }
 
     public function moveActDown($actNumber)
     {
         $nextAct = $actNumber + 1;
-        
+
         // Check if next act exists
         $exists = Scene::where('project_id', $this->project->id)
             ->where('act', $nextAct)
             ->exists();
-            
-        if (!$exists) return;
+
+        if (! $exists) {
+            return;
+        }
 
         app(SceneService::class)->swapActs($this->project->id, $actNumber, $nextAct);
 
@@ -149,7 +154,7 @@ class SceneList extends Component
     public function deleteScene($sceneId)
     {
         $scene = Scene::find($sceneId);
-        
+
         if ($scene && $scene->project_id === $this->project->id) {
             app(SceneService::class)->deleteScene($scene);
             session()->flash('success', 'Cena excluída com sucesso.');

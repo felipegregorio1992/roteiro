@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class LogService
 {
@@ -20,7 +20,7 @@ class LogService
             'timestamp' => now(),
             'ip_address' => $request?->ip() ?? request()->ip(),
             'user_agent' => $request?->userAgent() ?? request()->userAgent(),
-            'data' => $data
+            'data' => $data,
         ];
 
         Log::channel('activities')->info('User activity', $logData);
@@ -37,7 +37,7 @@ class LogService
             'errors' => $errors,
             'input' => $input,
             'timestamp' => now(),
-            'ip_address' => request()->ip()
+            'ip_address' => request()->ip(),
         ];
 
         Log::channel('validation')->warning('Validation failed', $logData);
@@ -53,7 +53,7 @@ class LogService
             'filename' => $filename,
             'user_id' => Auth::id(),
             'timestamp' => now(),
-            'data' => $data
+            'data' => $data,
         ];
 
         Log::channel('files')->info('File operation', $logData);
@@ -69,7 +69,7 @@ class LogService
             'duration_ms' => $duration,
             'user_id' => Auth::id(),
             'timestamp' => now(),
-            'metrics' => $metrics
+            'metrics' => $metrics,
         ];
 
         Log::channel('performance')->info('Performance metric', $logData);
@@ -86,7 +86,7 @@ class LogService
             'timestamp' => now(),
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
-            'data' => $data
+            'data' => $data,
         ];
 
         Log::channel('security')->warning('Security event', $logData);
@@ -101,7 +101,7 @@ class LogService
             'backup_operation' => $operation,
             'user_id' => Auth::id(),
             'timestamp' => now(),
-            'data' => $data
+            'data' => $data,
         ];
 
         Log::channel('backup')->info('Backup operation', $logData);
@@ -117,7 +117,7 @@ class LogService
             'cache_key' => $key,
             'user_id' => Auth::id(),
             'timestamp' => now(),
-            'data' => $data
+            'data' => $data,
         ];
 
         Log::channel('cache')->debug('Cache operation', $logData);

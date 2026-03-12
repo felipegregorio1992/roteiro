@@ -3,18 +3,17 @@
 namespace App\Imports;
 
 use App\Models\Character;
-use App\Models\ExcelData;
 use App\Models\Episode;
+use App\Models\ExcelData;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToCollection;
-use Maatwebsite\Excel\Concerns\WithValidation;
 
 class ScriptImport implements ToCollection
 {
     protected $projectId;
+
     protected $fileName;
 
     public function __construct($projectId, $fileName)
@@ -23,9 +22,6 @@ class ScriptImport implements ToCollection
         $this->fileName = $fileName;
     }
 
-    /**
-     * @param Collection $rows
-     */
     public function collection(Collection $rows)
     {
         // Remove linhas totalmente vazias
@@ -38,7 +34,7 @@ class ScriptImport implements ToCollection
         }
 
         // Determina o número total de episódios baseado no número máximo de colunas
-        $maxColumns = $rows->max(fn($row) => count($row));
+        $maxColumns = $rows->max(fn ($row) => count($row));
         $totalEpisodes = $maxColumns > 1 ? $maxColumns - 1 : 1;
 
         DB::transaction(function () use ($rows, $totalEpisodes) {
@@ -78,20 +74,21 @@ class ScriptImport implements ToCollection
                 'description' => '',
                 'duration' => 60,
                 'order' => $i,
-                'episode_number' => $i
+                'episode_number' => $i,
             ]);
             $episodeIds[$i] = $episode->id;
         }
+
         return $episodeIds;
     }
 
     protected function processCharactersAndDialogues(Collection $rows, array $episodeIds, int $totalEpisodes)
     {
         $dialoguesToInsert = [];
-        
+
         foreach ($rows as $row) {
-            $characterName = trim((string)($row[0] ?? ''));
-            
+            $characterName = trim((string) ($row[0] ?? ''));
+
             if (empty($characterName)) {
                 continue;
             }
@@ -99,26 +96,26 @@ class ScriptImport implements ToCollection
             $character = Character::create([
                 'name' => $characterName,
                 'project_id' => $this->projectId,
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
             ]);
 
             // Para cada coluna (episódio)
             for ($i = 1; $i <= $totalEpisodes; $i++) {
-                $dialogue = trim((string)($row[$i] ?? ''));
-                
-                if (!empty($dialogue) && isset($episodeIds[$i])) {
+                $dialogue = trim((string) ($row[$i] ?? ''));
+
+                if (! empty($dialogue) && isset($episodeIds[$i])) {
                     $dialoguesToInsert[] = [
                         'character_id' => $character->id,
                         'episode_id' => $episodeIds[$i],
                         'dialogue' => $dialogue,
                         'created_at' => now(),
-                        'updated_at' => now()
+                        'updated_at' => now(),
                     ];
                 }
             }
         }
 
-        if (!empty($dialoguesToInsert)) {
+        if (! empty($dialoguesToInsert)) {
             DB::table('character_episode')->insert($dialoguesToInsert);
         }
     }
@@ -131,7 +128,7 @@ class ScriptImport implements ToCollection
             'project_id' => $this->projectId,
             'file_name' => $this->fileName,
             'headers' => json_encode([]),
-            'data' => json_encode($rows->toArray())
+            'data' => json_encode($rows->toArray()),
         ]);
     }
 }

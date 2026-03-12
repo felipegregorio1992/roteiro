@@ -16,7 +16,7 @@ class Dialogue extends Model
         'target_character_id',
         'scene_id',
         'content',
-        'order'
+        'order',
     ];
 
     public function project(): BelongsTo

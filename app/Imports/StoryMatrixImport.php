@@ -2,8 +2,8 @@
 
 namespace App\Imports;
 
-use App\Models\Episode;
 use App\Models\Character;
+use App\Models\Episode;
 use App\Models\Project;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +12,7 @@ use Maatwebsite\Excel\Concerns\ToCollection;
 class StoryMatrixImport implements ToCollection
 {
     protected $projectId;
+
     protected $fileName;
 
     public function __construct($projectId, $fileName)
@@ -30,42 +31,44 @@ class StoryMatrixImport implements ToCollection
             // Check if this row looks like a header
             // Criteria: Has "Personagem" OR has "Ato" or numeric headers
             $rowString = implode(' ', $row->filter()->toArray());
-            
+
             if (stripos($rowString, 'Personagem') !== false || stripos($rowString, 'Ato') !== false || stripos($rowString, 'Episódio') !== false || stripos($rowString, '101') !== false) {
                 $headerRowIndex = $index;
-                
+
                 // Map columns
                 foreach ($row as $colIndex => $cell) {
-                    $cell = (string)$cell;
+                    $cell = (string) $cell;
                     // Detect Act/Episode number
                     if (preg_match('/(Ato|Episódio|Ep)\s*(\d+)/i', $cell, $matches)) {
-                        $episodeColumns[$colIndex] = (int)$matches[2];
+                        $episodeColumns[$colIndex] = (int) $matches[2];
                     } elseif (is_numeric($cell) && $cell > 0 && $cell < 1000) {
                         // Assuming plain numbers like "101", "1", "2" are acts/episodes
-                        $episodeColumns[$colIndex] = (int)$cell;
+                        $episodeColumns[$colIndex] = (int) $cell;
                     }
                 }
-                
+
                 // If we found episode columns, break
-                if (!empty($episodeColumns)) {
+                if (! empty($episodeColumns)) {
                     break;
                 }
             }
         }
 
         if ($headerRowIndex === null || empty($episodeColumns)) {
-             // Fallback: Assume Row 1 is header, Col A is Char, Col B=Ep 1, Col C=Ep 2...
-             $headerRowIndex = 0;
-             $colCount = count($rows[0] ?? []);
-             for ($i = 1; $i < $colCount; $i++) {
-                 $episodeColumns[$i] = $i;
-             }
+            // Fallback: Assume Row 1 is header, Col A is Char, Col B=Ep 1, Col C=Ep 2...
+            $headerRowIndex = 0;
+            $colCount = count($rows[0] ?? []);
+            for ($i = 1; $i < $colCount; $i++) {
+                $episodeColumns[$i] = $i;
+            }
         }
 
         // 2. Process Data Rows
         DB::transaction(function () use ($rows, $headerRowIndex, $episodeColumns) {
             $project = Project::find($this->projectId);
-            if (!$project) return;
+            if (! $project) {
+                return;
+            }
 
             // Ensure we have episodes for these columns
             foreach ($episodeColumns as $epNum) {
@@ -75,7 +78,7 @@ class StoryMatrixImport implements ToCollection
                         'title' => "Episódio $epNum",
                         'description' => 'Importado do Excel',
                         'order' => $epNum,
-                        'duration' => 60 // Default duration
+                        'duration' => 60, // Default duration
                     ]
                 );
             }
@@ -83,9 +86,11 @@ class StoryMatrixImport implements ToCollection
             // Process Characters
             for ($i = $headerRowIndex + 1; $i < count($rows); $i++) {
                 $row = $rows[$i];
-                $charName = trim((string)($row[0] ?? '')); // Assume Col 0 is Name
+                $charName = trim((string) ($row[0] ?? '')); // Assume Col 0 is Name
 
-                if (empty($charName)) continue;
+                if (empty($charName)) {
+                    continue;
+                }
 
                 // Find or Create Character
                 $character = Character::firstOrCreate(
@@ -95,8 +100,8 @@ class StoryMatrixImport implements ToCollection
 
                 // Update Episode Contents (Pivot Table)
                 foreach ($episodeColumns as $colIndex => $epNum) {
-                    $content = trim((string)($row[$colIndex] ?? ''));
-                    if (!empty($content)) {
+                    $content = trim((string) ($row[$colIndex] ?? ''));
+                    if (! empty($content)) {
                         // Find the episode
                         $episode = Episode::where('project_id', $this->projectId)
                             ->where('episode_number', $epNum)
@@ -106,7 +111,7 @@ class StoryMatrixImport implements ToCollection
                             // Sync or Attach character to episode with dialogue
                             // Use syncWithoutDetaching to avoid removing other characters
                             $episode->characters()->syncWithoutDetaching([
-                                $character->id => ['dialogue' => $content]
+                                $character->id => ['dialogue' => $content],
                             ]);
                         }
                     }

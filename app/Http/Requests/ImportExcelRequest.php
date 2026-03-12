@@ -15,7 +15,7 @@ class ImportExcelRequest extends FormRequest
     {
         $projectId = $this->input('project_id');
         $project = Project::find($projectId);
-        
+
         return $project && $project->user_id === Auth::id();
     }
 
@@ -32,10 +32,10 @@ class ImportExcelRequest extends FormRequest
                 'file',
                 'mimes:xlsx,xls',
                 'mimetypes:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel',
-                'max:10240' // 10MB
+                'max:10240', // 10MB
             ],
             'project_id' => 'required|exists:projects,id',
-            'import_type' => 'required|in:script,story_matrix'
+            'import_type' => 'required|in:script,story_matrix',
         ];
     }
 

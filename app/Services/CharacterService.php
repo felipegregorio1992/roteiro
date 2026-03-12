@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Models\Character;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CharacterService
 {
@@ -31,13 +31,13 @@ class CharacterService
             if (isset($dialogues[$act])) {
                 $actContent = '';
                 foreach ($dialogues[$act] as $dialogue) {
-                    if (!empty($dialogue->dialogue)) {
-                        if (!empty($actContent)) {
+                    if (! empty($dialogue->dialogue)) {
+                        if (! empty($actContent)) {
                             $actContent .= "\n\n";
                         }
                         $actContent .= $dialogue->dialogue;
-                    } elseif (!empty($dialogue->description)) {
-                        if (!empty($actContent)) {
+                    } elseif (! empty($dialogue->description)) {
+                        if (! empty($actContent)) {
                             $actContent .= "\n\n";
                         }
                         $actContent .= $dialogue->description;
@@ -52,9 +52,6 @@ class CharacterService
 
     /**
      * Create a new character.
-     *
-     * @param array $data
-     * @return Character
      */
     public function createCharacter(array $data): Character
     {
@@ -68,27 +65,23 @@ class CharacterService
             'fears' => $data['fears'] ?? null,
             'history' => $data['history'] ?? null,
             'personality' => $data['personality'] ?? null,
-            'notes' => $data['notes'] ?? null
+            'notes' => $data['notes'] ?? null,
         ]);
 
         CacheService::clearProjectCache($data['project_id'], Auth::id());
-        
+
         return $character;
     }
 
     /**
      * Update an existing character.
-     *
-     * @param Character $character
-     * @param array $data
-     * @return bool
      */
     public function updateCharacter(Character $character, array $data): bool
     {
         $updated = $character->update($data);
 
         if ($updated) {
-             CacheService::clearProjectCache($character->project_id, Auth::id());
+            CacheService::clearProjectCache($character->project_id, Auth::id());
         }
 
         return $updated;
@@ -96,9 +89,6 @@ class CharacterService
 
     /**
      * Delete a character.
-     *
-     * @param Character $character
-     * @return bool|null
      */
     public function deleteCharacter(Character $character): ?bool
     {
@@ -107,7 +97,7 @@ class CharacterService
         $deleted = $character->delete();
 
         if ($deleted) {
-             CacheService::clearProjectCache($projectId, Auth::id());
+            CacheService::clearProjectCache($projectId, Auth::id());
         }
 
         return $deleted;

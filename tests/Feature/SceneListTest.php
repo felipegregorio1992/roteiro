@@ -19,11 +19,11 @@ class SceneListTest extends TestCase
     {
         $user = User::factory()->create();
         $this->actingAs($user);
-        
+
         $project = Project::create([
             'user_id' => $user->id,
             'name' => 'Test Project',
-            'description' => 'Test Description'
+            'description' => 'Test Description',
         ]);
 
         Livewire::test(SceneList::class, ['project' => $project])
@@ -35,9 +35,9 @@ class SceneListTest extends TestCase
     {
         $user = User::factory()->create();
         $this->actingAs($user);
-        
+
         $project = Project::create(['user_id' => $user->id, 'name' => 'Test', 'description' => 'Desc']);
-        
+
         $scene = Scene::create([
             'project_id' => $project->id,
             'user_id' => $user->id,
@@ -45,11 +45,11 @@ class SceneListTest extends TestCase
             'act' => 1,
             'order' => 1,
             'description' => 'Desc',
-            'duration' => 10
+            'duration' => 10,
         ]);
 
         $character = Character::create(['project_id' => $project->id, 'user_id' => $user->id, 'name' => 'Hero']);
-        
+
         $scene->characters()->attach($character->id, ['dialogue' => 'Hello World']);
 
         Livewire::test(SceneList::class, ['project' => $project])
@@ -62,9 +62,9 @@ class SceneListTest extends TestCase
     {
         $user = User::factory()->create();
         $this->actingAs($user);
-        
+
         $project = Project::create(['user_id' => $user->id, 'name' => 'Test', 'description' => 'Desc']);
-        
+
         $scene = Scene::create([
             'project_id' => $project->id,
             'user_id' => $user->id,
@@ -72,7 +72,7 @@ class SceneListTest extends TestCase
             'act' => 1,
             'order' => 1,
             'description' => 'Desc',
-            'duration' => 10
+            'duration' => 10,
         ]);
 
         $character = Character::create(['project_id' => $project->id, 'user_id' => $user->id, 'name' => 'Hero']);
@@ -80,13 +80,13 @@ class SceneListTest extends TestCase
 
         Livewire::test(SceneList::class, ['project' => $project])
             ->call('toggleExpand', $scene->id)
-            ->set('editingDialogues.' . $character->id, 'New Dialogue')
+            ->set('editingDialogues.'.$character->id, 'New Dialogue')
             ->call('saveDialogue', $scene->id, $character->id);
 
         $this->assertDatabaseHas('character_scene', [
             'scene_id' => $scene->id,
             'character_id' => $character->id,
-            'dialogue' => 'New Dialogue'
+            'dialogue' => 'New Dialogue',
         ]);
     }
 
@@ -94,9 +94,9 @@ class SceneListTest extends TestCase
     {
         $user = User::factory()->create();
         $this->actingAs($user);
-        
+
         $project = Project::create(['user_id' => $user->id, 'name' => 'Test', 'description' => 'Desc']);
-        
+
         $scene1 = Scene::create([
             'project_id' => $project->id,
             'user_id' => $user->id,
@@ -104,7 +104,7 @@ class SceneListTest extends TestCase
             'act' => 1,
             'order' => 1,
             'description' => 'Desc',
-            'duration' => 10
+            'duration' => 10,
         ]);
 
         // Simulate moving Scene 1 to Act 2, Order 1
@@ -112,9 +112,9 @@ class SceneListTest extends TestCase
             [
                 'value' => 2, // Act 2
                 'items' => [
-                    ['value' => $scene1->id, 'order' => 1]
-                ]
-            ]
+                    ['value' => $scene1->id, 'order' => 1],
+                ],
+            ],
         ];
 
         Livewire::test(SceneList::class, ['project' => $project])
@@ -123,7 +123,7 @@ class SceneListTest extends TestCase
         $this->assertDatabaseHas('scenes', [
             'id' => $scene1->id,
             'act' => 2,
-            'order' => 1
+            'order' => 1,
         ]);
     }
 }

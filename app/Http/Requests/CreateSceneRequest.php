@@ -15,7 +15,7 @@ class CreateSceneRequest extends FormRequest
     {
         $projectId = $this->input('project_id');
         $project = Project::find($projectId);
-        
+
         return $project && $project->user_id === Auth::id();
     }
 
@@ -38,7 +38,7 @@ class CreateSceneRequest extends FormRequest
             'dialogues.*' => 'nullable|string|max:2000',
             'project_id' => 'required|exists:projects,id',
             'episode_id' => 'nullable|exists:episodes,id',
-            'act_number' => 'sometimes|integer|min:1|max:30'
+            'act_number' => 'sometimes|integer|min:1|max:30',
         ];
     }
 
@@ -85,7 +85,7 @@ class CreateSceneRequest extends FormRequest
      */
     private function sanitizeString(?string $value): ?string
     {
-        if (!$value) {
+        if (! $value) {
             return $value;
         }
 

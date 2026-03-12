@@ -23,11 +23,11 @@ class Character extends Model
         'history',
         'personality',
         'notes',
-        'act_contents'
+        'act_contents',
     ];
 
     protected $casts = [
-        'act_contents' => 'array'
+        'act_contents' => 'array',
     ];
 
     public function user(): BelongsTo

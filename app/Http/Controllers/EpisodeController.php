@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Episode;
-use App\Models\Character;
-use App\Models\Project;
-use App\Services\EpisodeService;
 use App\Http\Requests\CreateEpisodeRequest;
 use App\Http\Requests\UpdateEpisodeRequest;
+use App\Models\Character;
+use App\Models\Episode;
+use App\Models\Project;
+use App\Services\EpisodeService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class EpisodeController extends Controller
 {
@@ -49,14 +49,14 @@ class EpisodeController extends Controller
         $lastEpisode = Episode::where('project_id', $project->id)
             ->orderBy('episode_number', 'desc')
             ->first();
-            
+
         $nextEpisodeNumber = $lastEpisode ? ($lastEpisode->episode_number + 1) : 1;
 
         $characters = Character::where('project_id', $project->id)
             ->where('user_id', Auth::id())
             ->orderBy('name', 'asc')
             ->get();
-            
+
         return view('episodes.create', compact('characters', 'project', 'nextEpisodeNumber'));
     }
 
@@ -68,10 +68,10 @@ class EpisodeController extends Controller
         $this->authorize('create', Episode::class);
 
         $validated = $request->validated();
-        
+
         // If update_characters flag is present but characters array is missing (e.g. all unchecked),
         // ensure we pass an empty array to the service.
-        if ($request->has('update_characters') && !array_key_exists('characters', $validated)) {
+        if ($request->has('update_characters') && ! array_key_exists('characters', $validated)) {
             $validated['characters'] = [];
         }
 
@@ -97,13 +97,13 @@ class EpisodeController extends Controller
         if ($episode->project_id != $project->id) {
             abort(404, 'Episódio não encontrado neste projeto.');
         }
-        
+
         // Verifica se o usuário tem acesso ao projeto
         if ($project->user_id !== Auth::id()) {
             abort(403, 'Você não tem permissão para acessar este projeto.');
         }
 
-        $episode->load(['characters' => function($query) {
+        $episode->load(['characters' => function ($query) {
             $query->orderBy('name', 'asc');
         }]);
 
@@ -125,7 +125,7 @@ class EpisodeController extends Controller
         if ($episode->project_id != $project->id) {
             abort(404, 'Episódio não encontrado neste projeto.');
         }
-        
+
         // Verifica se o usuário tem acesso ao projeto
         if ($project->user_id !== Auth::id()) {
             abort(403, 'Você não tem permissão para acessar este projeto.');
@@ -135,7 +135,7 @@ class EpisodeController extends Controller
             ->where('user_id', Auth::id())
             ->orderBy('name', 'asc')
             ->get();
-            
+
         return view('episodes.edit', compact('episode', 'characters', 'project'));
     }
 
@@ -150,7 +150,7 @@ class EpisodeController extends Controller
 
         // If update_characters flag is present but characters array is missing (e.g. all unchecked),
         // ensure we pass an empty array to the service.
-        if ($request->has('update_characters') && !array_key_exists('characters', $validated)) {
+        if ($request->has('update_characters') && ! array_key_exists('characters', $validated)) {
             $validated['characters'] = [];
         }
 
@@ -175,7 +175,7 @@ class EpisodeController extends Controller
         if ($episode->project_id != $project->id) {
             abort(404, 'Episódio não encontrado neste projeto.');
         }
-        
+
         $this->episodeService->deleteEpisode($episode);
 
         return redirect()->route('episodes.index', ['project' => $project->id])
@@ -188,8 +188,8 @@ class EpisodeController extends Controller
     private function getProjectOrAbort(Request $request): Project
     {
         $projectId = $request->query('project') ?? $request->input('project_id');
-        
-        if (!$projectId) {
+
+        if (! $projectId) {
             abort(400, 'Por favor, selecione um projeto.');
         }
 

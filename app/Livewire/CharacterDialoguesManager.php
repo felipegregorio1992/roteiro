@@ -4,17 +4,22 @@ namespace App\Livewire;
 
 use App\Models\Character;
 use App\Models\Dialogue;
-use Livewire\Component;
-use Livewire\Attributes\On;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
+use Livewire\Component;
 
 class CharacterDialoguesManager extends Component
 {
     public $isOpen = false;
+
     public $character;
+
     public $content;
+
     public $target_character_id;
+
     public $scene_id;
+
     public $project_characters = [];
 
     protected $rules = [
@@ -26,22 +31,22 @@ class CharacterDialoguesManager extends Component
     #[On('openDialogueManager')]
     public function openDialogueManager($characterId)
     {
-        $character = Character::with(['dialogues' => function($query) {
+        $character = Character::with(['dialogues' => function ($query) {
             $query->latest();
         }, 'dialogues.targetCharacter', 'dialogues.scene'])->findOrFail($characterId);
-        
+
         // Ensure the user owns the character or project
         if ($character->user_id !== Auth::id()) {
             abort(403);
         }
 
         $this->character = $character;
-        
+
         $this->project_characters = Character::where('project_id', $this->character->project_id)
             ->where('id', '!=', $characterId)
             ->orderBy('name')
             ->get();
-            
+
         $this->isOpen = true;
         $this->resetForm();
     }
@@ -78,7 +83,7 @@ class CharacterDialoguesManager extends Component
     public function delete($id)
     {
         $dialogue = Dialogue::findOrFail($id);
-        
+
         if ($dialogue->character_id === $this->character->id) {
             $dialogue->delete();
             $this->character->refresh();

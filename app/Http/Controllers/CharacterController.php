@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Character;
-use App\Models\Scene;
-use App\Models\Project;
-use App\Services\CacheService;
-use App\Services\CharacterService;
 use App\Http\Requests\CreateCharacterRequest;
 use App\Http\Requests\UpdateCharacterRequest;
+use App\Models\Character;
+use App\Models\Project;
+use App\Models\Scene;
+use App\Services\CacheService;
+use App\Services\CharacterService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class CharacterController extends BaseController
 {
@@ -29,8 +27,8 @@ class CharacterController extends BaseController
     public function index(Request $request)
     {
         $user = Auth::user();
-        
-        if (!$user) {
+
+        if (! $user) {
             return redirect()->route('login');
         }
 
@@ -62,7 +60,7 @@ class CharacterController extends BaseController
         if ($project instanceof \Illuminate\Http\RedirectResponse) {
             return $project;
         }
-        
+
         // Autorização via Policy
         $this->authorize('view', $project);
 
@@ -90,7 +88,7 @@ class CharacterController extends BaseController
     public function show(Character $character, Request $request)
     {
         $this->authorize('view', $character);
-        
+
         $project = $this->getProjectOrRedirect($request);
         if ($project instanceof \Illuminate\Http\RedirectResponse) {
             return $project;
@@ -100,12 +98,12 @@ class CharacterController extends BaseController
         if ($character->project_id != $project->id) {
             abort(404, 'Personagem não encontrado neste projeto.');
         }
-        
+
         // Carrega as cenas ordenadas
-        $character->load(['scenes' => function($query) {
+        $character->load(['scenes' => function ($query) {
             $query->orderBy('order', 'asc');
         }]);
-        
+
         return view('characters.show', compact('character', 'project'));
     }
 
@@ -164,7 +162,7 @@ class CharacterController extends BaseController
         }
 
         $this->characterService->deleteCharacter($character);
-        
+
         $this->logActivity('Character deleted', ['character_id' => $character->id]);
 
         return redirect()->route('characters.index', ['project' => $project->id])
@@ -204,7 +202,7 @@ class CharacterController extends BaseController
     public function restoreDialogue(Character $character, Scene $scene, Request $request)
     {
         $this->authorize('update', $character);
-        
+
         $project = $this->getProjectOrRedirect($request);
         if ($project instanceof \Illuminate\Http\RedirectResponse) {
             return $project;
@@ -225,7 +223,7 @@ class CharacterController extends BaseController
     private function getProjectOrRedirect(Request $request)
     {
         $projectId = $request->query('project');
-        if (!$projectId) {
+        if (! $projectId) {
             return redirect()->route('projects.index')
                 ->with('error', 'Por favor, selecione um projeto.');
         }

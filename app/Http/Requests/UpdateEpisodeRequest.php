@@ -22,7 +22,7 @@ class UpdateEpisodeRequest extends FormRequest
         }
 
         $project = Project::find($projectId);
-        
+
         return $project && $project->user_id === Auth::id();
     }
 
@@ -89,7 +89,7 @@ class UpdateEpisodeRequest extends FormRequest
      */
     private function sanitizeString(?string $value): ?string
     {
-        if (!$value) {
+        if (! $value) {
             return $value;
         }
 

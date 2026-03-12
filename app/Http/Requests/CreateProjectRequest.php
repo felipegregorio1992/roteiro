@@ -31,9 +31,9 @@ class CreateProjectRequest extends FormRequest
                 'min:3',
                 Rule::unique('projects')->where(function ($query) {
                     return $query->where('user_id', Auth::id());
-                })
+                }),
             ],
-            'description' => 'nullable|string|max:2000|min:10'
+            'description' => 'nullable|string|max:2000|min:10',
         ];
     }
 
@@ -68,7 +68,7 @@ class CreateProjectRequest extends FormRequest
      */
     private function sanitizeString(?string $value): ?string
     {
-        if (!$value) {
+        if (! $value) {
             return $value;
         }
 

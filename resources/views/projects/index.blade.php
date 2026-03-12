@@ -50,7 +50,7 @@
                                 <div class="flex items-start justify-between">
                                     <div class="flex-1">
                                         <h2 class="text-xl font-semibold text-gray-900 mb-2">
-                                            <a href="{{ route('projects.show', $project) }}" class="hover:text-indigo-600">
+                                            <a href="{{ route('scenes.index', ['project' => $project->id]) }}" class="hover:text-indigo-600">
                                                 {{ $project->name }}
                                             </a>
                                         </h2>

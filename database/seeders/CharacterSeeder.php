@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Character;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class CharacterSeeder extends Seeder
@@ -27,7 +26,7 @@ class CharacterSeeder extends Seeder
                 'goals' => 'Busca descobrir a verdade sobre sua família e resolver os conflitos pendentes.',
                 'fears' => 'Medo de falhar com aqueles que dependem dele e de repetir erros do passado.',
                 'notes' => 'Personagem com arco de desenvolvimento significativo ao longo da história.',
-                'user_id' => $admin->id
+                'user_id' => $admin->id,
             ],
             [
                 'name' => 'Carla Brandão',
@@ -39,7 +38,7 @@ class CharacterSeeder extends Seeder
                 'goals' => 'Busca proteger seus interesses e os daqueles que são importantes para ela.',
                 'fears' => 'Teme perder o controle das situações e não conseguir proteger as pessoas próximas.',
                 'notes' => 'Personagem com forte influência no desenvolvimento da trama.',
-                'user_id' => $admin->id
+                'user_id' => $admin->id,
             ],
             [
                 'name' => 'Ana Prata',
@@ -51,8 +50,8 @@ class CharacterSeeder extends Seeder
                 'goals' => 'Busca resolver questões do passado e estabelecer um novo futuro.',
                 'fears' => 'Receio de que seu passado afete negativamente seu presente e futuro.',
                 'notes' => 'Personagem com desenvolvimento significativo e importantes revelações ao longo da história.',
-                'user_id' => $admin->id
-            ]
+                'user_id' => $admin->id,
+            ],
         ];
 
         foreach ($characters as $character) {

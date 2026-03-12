@@ -8,7 +8,6 @@ use App\Models\Scene;
 use App\Models\User;
 use App\Services\SceneService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Auth;
 use Tests\TestCase;
 
 class SceneServiceTest extends TestCase
@@ -20,7 +19,7 @@ class SceneServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->sceneService = new SceneService();
+        $this->sceneService = new SceneService;
     }
 
     public function test_create_scene()
@@ -39,7 +38,7 @@ class SceneServiceTest extends TestCase
             'order' => 1,
             'act' => 1,
             'characters' => [$character->id],
-            'dialogues' => [$character->id => 'Hello World']
+            'dialogues' => [$character->id => 'Hello World'],
         ];
 
         $scene = $this->sceneService->createScene($data);
@@ -48,7 +47,7 @@ class SceneServiceTest extends TestCase
         $this->assertDatabaseHas('character_scene', [
             'scene_id' => $scene->id,
             'character_id' => $character->id,
-            'dialogue' => 'Hello World'
+            'dialogue' => 'Hello World',
         ]);
     }
 
@@ -59,7 +58,7 @@ class SceneServiceTest extends TestCase
 
         $project = Project::create(['user_id' => $user->id, 'name' => 'Test Project', 'description' => 'Test Description']);
         $character = Character::create(['user_id' => $user->id, 'project_id' => $project->id, 'name' => 'Hero']);
-        
+
         $scene = Scene::create([
             'project_id' => $project->id,
             'user_id' => $user->id,
@@ -67,13 +66,13 @@ class SceneServiceTest extends TestCase
             'act' => 1,
             'order' => 1,
             'description' => 'Desc',
-            'duration' => 10
+            'duration' => 10,
         ]);
 
         $data = [
             'title' => 'New Title',
             'characters' => [$character->id],
-            'dialogues' => [$character->id => 'Updated Dialogue']
+            'dialogues' => [$character->id => 'Updated Dialogue'],
         ];
 
         $this->sceneService->updateScene($scene, $data);
@@ -82,7 +81,7 @@ class SceneServiceTest extends TestCase
         $this->assertDatabaseHas('character_scene', [
             'scene_id' => $scene->id,
             'character_id' => $character->id,
-            'dialogue' => 'Updated Dialogue'
+            'dialogue' => 'Updated Dialogue',
         ]);
     }
 
@@ -93,7 +92,7 @@ class SceneServiceTest extends TestCase
 
         $project = Project::create(['user_id' => $user->id, 'name' => 'Test Project', 'description' => 'Test Description']);
         $character = Character::create(['user_id' => $user->id, 'project_id' => $project->id, 'name' => 'Hero']);
-        
+
         $scene = Scene::create([
             'project_id' => $project->id,
             'user_id' => $user->id,
@@ -101,7 +100,7 @@ class SceneServiceTest extends TestCase
             'act' => 1,
             'order' => 1,
             'description' => 'Desc',
-            'duration' => 10
+            'duration' => 10,
         ]);
 
         $this->sceneService->addCharacterToScene($scene, $character->id, 'Added Dialogue');
@@ -109,7 +108,7 @@ class SceneServiceTest extends TestCase
         $this->assertDatabaseHas('character_scene', [
             'scene_id' => $scene->id,
             'character_id' => $character->id,
-            'dialogue' => 'Added Dialogue'
+            'dialogue' => 'Added Dialogue',
         ]);
     }
 
@@ -120,7 +119,7 @@ class SceneServiceTest extends TestCase
 
         $project = Project::create(['user_id' => $user->id, 'name' => 'Test Project', 'description' => 'Test Description']);
         $character = Character::create(['user_id' => $user->id, 'project_id' => $project->id, 'name' => 'Hero']);
-        
+
         $scene = Scene::create([
             'project_id' => $project->id,
             'user_id' => $user->id,
@@ -128,7 +127,7 @@ class SceneServiceTest extends TestCase
             'act' => 1,
             'order' => 1,
             'description' => 'Desc',
-            'duration' => 10
+            'duration' => 10,
         ]);
 
         $scene->characters()->attach($character->id);
@@ -137,7 +136,7 @@ class SceneServiceTest extends TestCase
 
         $this->assertDatabaseMissing('character_scene', [
             'scene_id' => $scene->id,
-            'character_id' => $character->id
+            'character_id' => $character->id,
         ]);
     }
 }

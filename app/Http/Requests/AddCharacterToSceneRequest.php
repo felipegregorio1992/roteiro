@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class AddCharacterToSceneRequest extends FormRequest
 {
@@ -25,7 +24,7 @@ class AddCharacterToSceneRequest extends FormRequest
     {
         return [
             'character_id' => 'required|exists:characters,id',
-            'dialogue' => 'nullable|string'
+            'dialogue' => 'nullable|string',
         ];
     }
 }

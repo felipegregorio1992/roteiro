@@ -25,7 +25,7 @@ class UpdateActTitleRequest extends FormRequest
         return [
             'project_id' => 'required|exists:projects,id',
             'act_number' => 'required|integer|min:1',
-            'act_title' => 'required|string|max:255'
+            'act_title' => 'required|string|max:255',
         ];
     }
 }

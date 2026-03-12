@@ -117,6 +117,18 @@
                                             <span class="font-medium">Importar Dados</span>
                                         </div>
                                     </a>
+                                    <a href="{{ route('projects.files.index', ['project' => $project->id]) }}" 
+                                       class="block p-4 bg-gradient-to-r from-amber-50 to-amber-100 hover:from-amber-100 hover:to-amber-200 rounded-xl transition-all duration-200 hover:shadow-md group">
+                                        <div class="flex items-center text-amber-700 group-hover:text-amber-800">
+                                            <div class="bg-amber-200 rounded-lg p-2 mr-3 group-hover:bg-amber-300 transition-colors duration-200">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                          d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828L18 9.828a4 4 0 10-5.656-5.656L5.757 10.757a6 6 0 108.486 8.486L20.5 13" />
+                                                </svg>
+                                            </div>
+                                            <span class="font-medium">Arquivos</span>
+                                        </div>
+                                    </a>
                                 </div>
                             </div>
                         </div>

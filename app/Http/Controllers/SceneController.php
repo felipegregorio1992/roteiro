@@ -2,22 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Scene;
-use App\Models\Character;
-use App\Models\Project;
-use App\Services\SceneService;
-use App\Http\Requests\CreateSceneRequest;
-use App\Http\Requests\UpdateSceneRequest;
 use App\Http\Requests\AddCharacterToSceneRequest;
 use App\Http\Requests\CreateActRequest;
-use App\Http\Requests\UpdateActTitleRequest;
+use App\Http\Requests\CreateSceneRequest;
 use App\Http\Requests\ReorderScenesRequest;
+use App\Http\Requests\UpdateActTitleRequest;
+use App\Http\Requests\UpdateSceneRequest;
+use App\Models\Character;
+use App\Models\Project;
+use App\Models\Scene;
+use App\Services\SceneService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\ScenesExport;
 
 class SceneController extends Controller
 {
@@ -37,6 +36,7 @@ class SceneController extends Controller
     {
         // Redireciona para episódios como solicitado pelo usuário que deseja substituir o sistema de cenas
         $project = $this->getProjectOrAbort($request);
+
         return redirect()->route('episodes.index', ['project' => $project->id]);
     }
 
@@ -47,7 +47,7 @@ class SceneController extends Controller
     {
         $project = $this->getProjectOrAbort($request);
         $episodeId = $request->input('episode_id');
-        
+
         $this->authorize('view', $project);
         $this->authorize('create', Scene::class);
 
@@ -55,7 +55,7 @@ class SceneController extends Controller
             ->where('user_id', Auth::id())
             ->orderBy('name', 'asc')
             ->get();
-            
+
         return view('scenes.create', compact('characters', 'project', 'episodeId'));
     }
 
@@ -76,7 +76,7 @@ class SceneController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'message' => 'Cena criada com sucesso!',
-                'scene' => $scene
+                'scene' => $scene,
             ]);
         }
 
@@ -102,13 +102,13 @@ class SceneController extends Controller
         if ($scene->project_id != $project->id) {
             abort(404, 'Cena não encontrada neste projeto.');
         }
-        
+
         // Verifica se o usuário tem acesso ao projeto
         if ($project->user_id !== Auth::id()) {
             abort(403, 'Você não tem permissão para acessar este projeto.');
         }
 
-        $scene->load(['characters' => function($query) {
+        $scene->load(['characters' => function ($query) {
             $query->orderBy('name', 'asc');
         }]);
 
@@ -128,7 +128,7 @@ class SceneController extends Controller
         if ($scene->project_id != $project->id) {
             abort(404, 'Cena não encontrada neste projeto.');
         }
-        
+
         // Verifica se o usuário tem acesso ao projeto
         if ($project->user_id !== Auth::id()) {
             abort(403, 'Você não tem permissão para acessar este projeto.');
@@ -138,7 +138,7 @@ class SceneController extends Controller
             ->where('user_id', Auth::id())
             ->orderBy('name', 'asc')
             ->get();
-            
+
         return view('scenes.edit', compact('scene', 'characters', 'project'));
     }
 
@@ -172,18 +172,17 @@ class SceneController extends Controller
         if ($scene->project_id != $project->id) {
             abort(404, 'Cena não encontrada neste projeto.');
         }
-        
+
         $this->sceneService->deleteScene($scene);
 
         return redirect()->route('scenes.index', ['project' => $project->id])
             ->with('success', 'Cena excluída com sucesso!');
     }
 
-
     public function addCharacter(AddCharacterToSceneRequest $request, Scene $scene)
     {
         $this->authorize('update', $scene);
-        
+
         $validated = $request->validated();
 
         $this->sceneService->addCharacterToScene($scene, $validated['character_id'], $validated['dialogue'] ?? null);
@@ -194,9 +193,9 @@ class SceneController extends Controller
     public function removeCharacter(Scene $scene, Character $character)
     {
         $this->authorize('update', $scene);
-        
+
         $this->sceneService->removeCharacterFromScene($scene, $character->id);
-        
+
         return back()->with('success', 'Personagem removido da cena!');
     }
 
@@ -223,7 +222,7 @@ class SceneController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'message' => "Ato {$validated['act_number']} criado com sucesso!",
-                'scene' => $scene
+                'scene' => $scene,
             ]);
         }
 
@@ -247,7 +246,7 @@ class SceneController extends Controller
 
         if ($request->expectsJson()) {
             return response()->json([
-                'message' => "Nome do ato {$validated['act_number']} atualizado com sucesso!"
+                'message' => "Nome do ato {$validated['act_number']} atualizado com sucesso!",
             ]);
         }
 
@@ -264,11 +263,11 @@ class SceneController extends Controller
 
         $actNumber = $validated['act_number'];
         $scenes = $validated['scenes'];
-        
+
         // Use project_id from request if available, otherwise fallback to user's current project (legacy support)
         $projectId = $validated['project_id'] ?? Auth::user()->current_project_id;
 
-        if (!$projectId) {
+        if (! $projectId) {
             return response()->json(['message' => 'Projeto não identificado.'], 400);
         }
 
@@ -278,16 +277,16 @@ class SceneController extends Controller
             Log::info('Ordem das cenas atualizada', [
                 'act_number' => $actNumber,
                 'project_id' => $projectId,
-                'scenes_count' => count($scenes)
+                'scenes_count' => count($scenes),
             ]);
 
             return response()->json(['message' => 'Ordem atualizada com sucesso!']);
         } catch (\Exception $e) {
             Log::error('Erro ao reordenar cenas', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return response()->json(['message' => 'Erro ao salvar a ordem das cenas.'], 500);
         }
     }
@@ -308,11 +307,11 @@ class SceneController extends Controller
     private function getProjectOrAbort(Request $request): Project
     {
         // Tenta obter o ID do projeto de várias fontes: input (form/query), rota ou query string explícita
-        $projectId = $request->input('project_id') 
-            ?? $request->input('project') 
+        $projectId = $request->input('project_id')
+            ?? $request->input('project')
             ?? $request->route('project');
-        
-        if (!$projectId) {
+
+        if (! $projectId) {
             abort(400, 'Por favor, selecione um projeto.');
         }
 

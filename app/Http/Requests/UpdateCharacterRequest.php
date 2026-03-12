@@ -16,10 +16,10 @@ class UpdateCharacterRequest extends FormRequest
     {
         $projectId = $this->input('project_id');
         $project = Project::find($projectId);
-        
+
         // Also check if the character belongs to the project
         $character = $this->route('character');
-        
+
         return $project && $project->user_id === Auth::id() && $character->project_id == $projectId;
     }
 
@@ -32,7 +32,7 @@ class UpdateCharacterRequest extends FormRequest
     {
         $projectId = $this->input('project_id');
         $characterId = $this->route('character')->id;
-        
+
         return [
             'name' => [
                 'required',
@@ -41,7 +41,7 @@ class UpdateCharacterRequest extends FormRequest
                 'min:2',
                 Rule::unique('characters')->where(function ($query) use ($projectId) {
                     return $query->where('project_id', $projectId);
-                })->ignore($characterId)
+                })->ignore($characterId),
             ],
             'description' => 'required|string|max:2000|min:10',
             'role' => 'required|string|max:255|in:Protagonista,Antagonista,Mentor,Aliado,Personagem',
@@ -50,7 +50,7 @@ class UpdateCharacterRequest extends FormRequest
             'history' => 'nullable|string|max:2000',
             'personality' => 'nullable|string|max:1000',
             'notes' => 'nullable|string|max:2000',
-            'project_id' => 'required|exists:projects,id'
+            'project_id' => 'required|exists:projects,id',
         ];
     }
 
@@ -96,7 +96,7 @@ class UpdateCharacterRequest extends FormRequest
      */
     private function sanitizeString(?string $value): ?string
     {
-        if (!$value) {
+        if (! $value) {
             return $value;
         }
 

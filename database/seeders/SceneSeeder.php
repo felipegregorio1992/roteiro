@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Character;
 use App\Models\Scene;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class SceneSeeder extends Seeder
@@ -28,8 +27,8 @@ class SceneSeeder extends Seeder
                 'order' => 1,
                 'characters' => [
                     $joao->id => ['dialogue' => 'Quem está me chamando?'],
-                    $maria->id => ['dialogue' => 'Venha, jovem. Seu destino o aguarda.']
-                ]
+                    $maria->id => ['dialogue' => 'Venha, jovem. Seu destino o aguarda.'],
+                ],
             ],
             [
                 'title' => 'Cena 2: O Encontro',
@@ -38,8 +37,8 @@ class SceneSeeder extends Seeder
                 'order' => 2,
                 'characters' => [
                     $joao->id => ['dialogue' => 'Não posso acreditar no que estou ouvindo.'],
-                    $maria->id => ['dialogue' => 'É sua missão impedir os planos de Pedro.']
-                ]
+                    $maria->id => ['dialogue' => 'É sua missão impedir os planos de Pedro.'],
+                ],
             ],
             [
                 'title' => 'Cena 3: A Conspiração',
@@ -47,17 +46,17 @@ class SceneSeeder extends Seeder
                 'duration' => 25,
                 'order' => 3,
                 'characters' => [
-                    $pedro->id => ['dialogue' => 'Ninguém poderá me impedir agora!']
-                ]
+                    $pedro->id => ['dialogue' => 'Ninguém poderá me impedir agora!'],
+                ],
             ],
         ];
 
         foreach ($scenes as $sceneData) {
             $characters = $sceneData['characters'] ?? [];
             unset($sceneData['characters']);
-            
+
             $scene = Scene::create($sceneData + ['user_id' => $admin->id]);
-            
+
             foreach ($characters as $characterId => $pivot) {
                 $scene->characters()->attach($characterId, $pivot);
             }

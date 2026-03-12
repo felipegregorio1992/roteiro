@@ -13,7 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         // Middleware de segurança global
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
-        
+
         // Rate limiting usando cache padrão (sem Redis)
         $middleware->throttleApi();
     })

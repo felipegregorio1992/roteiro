@@ -20,6 +20,14 @@
                     </svg>
                     Importar Dados
                 </a>
+                <a href="{{ route('projects.files.index', ['project' => $project->id]) }}"
+                   class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828L18 9.828a4 4 0 10-5.656-5.656L5.757 10.757a6 6 0 108.486 8.486L20.5 13" />
+                    </svg>
+                    Arquivos
+                </a>
             </div>
         </div>
     </x-slot>

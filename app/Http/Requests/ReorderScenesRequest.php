@@ -27,7 +27,7 @@ class ReorderScenesRequest extends FormRequest
             'scenes' => 'required|array|min:1',
             'scenes.*.id' => 'required|integer|exists:scenes,id',
             'scenes.*.order' => 'required|integer|min:1',
-            'project_id' => 'nullable|exists:projects,id'
+            'project_id' => 'nullable|exists:projects,id',
         ];
     }
 }

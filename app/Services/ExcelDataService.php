@@ -4,9 +4,7 @@ namespace App\Services;
 
 use App\Models\Character;
 use App\Models\ExcelData;
-use App\Models\Scene;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class ExcelDataService
 {
@@ -55,15 +53,17 @@ class ExcelDataService
 
             $finalMatrix[$character->id] = [
                 'name' => $character->name,
-                'acts' => $characterActs
+                'acts' => $characterActs,
             ];
         }
 
         // Depois, verifica se há personagens no Excel que não estão no banco
         if (is_array($data)) {
             foreach ($data as $row) {
-                $characterName = trim((string)($row[0] ?? ''));
-                if (empty($characterName)) continue;
+                $characterName = trim((string) ($row[0] ?? ''));
+                if (empty($characterName)) {
+                    continue;
+                }
 
                 // Verifica se o personagem já está na matriz final
                 $exists = false;
@@ -75,30 +75,30 @@ class ExcelDataService
                 }
 
                 // Se não existe, adiciona com os dados do Excel
-                if (!$exists) {
+                if (! $exists) {
                     $acts = array_fill(1, $totalActs, '');
                     for ($i = 1; $i <= $totalActs; $i++) {
                         if (isset($row[$i])) {
-                            $acts[$i] = trim((string)$row[$i]);
+                            $acts[$i] = trim((string) $row[$i]);
                         }
                     }
 
-                    $finalMatrix['temp_' . md5($characterName)] = [
+                    $finalMatrix['temp_'.md5($characterName)] = [
                         'name' => $characterName,
-                        'acts' => $acts
+                        'acts' => $acts,
                     ];
                 }
             }
         }
 
         // Ordena a matriz final por nome do personagem
-        uasort($finalMatrix, function($a, $b) {
+        uasort($finalMatrix, function ($a, $b) {
             return strcmp($a['name'], $b['name']);
         });
 
         return [
             'matrix' => $finalMatrix,
-            'totalActs' => $totalActs
+            'totalActs' => $totalActs,
         ];
     }
 }

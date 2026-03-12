@@ -4,13 +4,13 @@ namespace App\Exports\Sheets;
 
 use App\Models\Project;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithTitle;
-use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ScenesSheet implements FromCollection, WithHeadings, WithTitle, WithStyles, ShouldAutoSize
+class ScenesSheet implements FromCollection, ShouldAutoSize, WithHeadings, WithStyles, WithTitle
 {
     protected $project;
 
@@ -31,8 +31,8 @@ class ScenesSheet implements FromCollection, WithHeadings, WithTitle, WithStyles
                     $scene->order,
                     $scene->title,
                     $scene->description,
-                    $scene->duration . ' min',
-                    $scene->characters->pluck('name')->implode(', ')
+                    $scene->duration.' min',
+                    $scene->characters->pluck('name')->implode(', '),
                 ];
             });
     }

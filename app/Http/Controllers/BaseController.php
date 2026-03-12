@@ -3,10 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
-use App\Services\CacheService;
 use App\Services\LogService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 abstract class BaseController extends Controller
 {
@@ -16,14 +13,14 @@ abstract class BaseController extends Controller
     protected function validateProjectAccess(int $projectId, int $userId): Project
     {
         $project = Project::findOrFail($projectId);
-        
+
         if ($project->user_id !== $userId) {
             abort(403, 'Você não tem permissão para acessar este projeto.');
         }
-        
+
         return $project;
     }
-    
+
     /**
      * Registra atividade do usuário
      */
@@ -31,7 +28,7 @@ abstract class BaseController extends Controller
     {
         LogService::logActivity($action, $data, request());
     }
-    
+
     /**
      * Aplica paginação com configurações padrão
      */
@@ -39,7 +36,7 @@ abstract class BaseController extends Controller
     {
         return $query->paginate($perPage);
     }
-    
+
     /**
      * Resposta JSON padronizada para APIs
      */
@@ -49,10 +46,10 @@ abstract class BaseController extends Controller
             'success' => $success,
             'message' => $message,
             'data' => $data,
-            'timestamp' => now()
+            'timestamp' => now(),
         ], $status);
     }
-    
+
     /**
      * Resposta de erro padronizada
      */
@@ -60,7 +57,7 @@ abstract class BaseController extends Controller
     {
         return $this->jsonResponse(false, $message, $errors, $status);
     }
-    
+
     /**
      * Resposta de sucesso padronizada
      */

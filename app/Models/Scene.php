@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Scene extends Model
 {
@@ -20,7 +20,7 @@ class Scene extends Model
         'description',
         'duration',
         'order',
-        'act'
+        'act',
     ];
 
     public function user(): BelongsTo
@@ -44,4 +44,4 @@ class Scene extends Model
             ->withPivot('dialogue', 'is_hidden')
             ->withTimestamps();
     }
-} 
+}

@@ -3,16 +3,13 @@
 namespace App\Services;
 
 use App\Models\Episode;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class EpisodeService
 {
     /**
      * Get episodes for a specific project.
-     *
-     * @param int $projectId
-     * @return Collection
      */
     public function getProjectEpisodes(int $projectId): Collection
     {
@@ -25,9 +22,6 @@ class EpisodeService
 
     /**
      * Create a new episode.
-     *
-     * @param array $data
-     * @return Episode
      */
     public function createEpisode(array $data): Episode
     {
@@ -40,7 +34,7 @@ class EpisodeService
                 'order' => $data['order'],
                 'episode_number' => $data['episode_number'] ?? null,
             ]);
-            
+
             // Set user_id if authenticated, otherwise expect it in data or handle appropriately
             $episode->user_id = auth()->id() ?? $data['user_id'] ?? null;
             $episode->save();
@@ -61,10 +55,6 @@ class EpisodeService
 
     /**
      * Update an existing episode.
-     *
-     * @param Episode $episode
-     * @param array $data
-     * @return Episode
      */
     public function updateEpisode(Episode $episode, array $data): Episode
     {
@@ -83,20 +73,20 @@ class EpisodeService
             // We assume if 'dialogues' is present, then characters section was likely present.
             // Or better: we rely on the controller to ensure 'characters' is present as empty array if needed.
             // But to be safe and allow "uncheck all":
-            
-            // If the key 'characters' exists (even if null), we sync. 
+
+            // If the key 'characters' exists (even if null), we sync.
             // If it doesn't exist, we might be doing a partial update (e.g. only title), so we do NOT sync.
             // To support unchecking all, the controller should ensure 'characters' is passed as [] if it was missing from request but intended.
             if (array_key_exists('characters', $data)) {
-                 $syncData = [];
-                 if (is_array($data['characters']) && !empty($data['characters'])) {
+                $syncData = [];
+                if (is_array($data['characters']) && ! empty($data['characters'])) {
                     $dialogues = $data['dialogues'] ?? [];
                     foreach ($data['characters'] as $characterId) {
                         $dialogue = $dialogues[$characterId] ?? null;
                         $syncData[$characterId] = ['dialogue' => $dialogue];
                     }
-                 }
-                 $episode->characters()->sync($syncData);
+                }
+                $episode->characters()->sync($syncData);
             }
 
             return $episode;
@@ -105,9 +95,6 @@ class EpisodeService
 
     /**
      * Delete an episode.
-     *
-     * @param Episode $episode
-     * @return void
      */
     public function deleteEpisode(Episode $episode): void
     {
@@ -116,36 +103,33 @@ class EpisodeService
 
     /**
      * Get scenes for a specific episode grouped by act.
-     *
-     * @param Episode $episode
-     * @return array
      */
     public function getEpisodeScenesGroupedByAct(Episode $episode): array
     {
         $scenes = $episode->scenes;
-        
+
         $acts = [];
-        
+
         foreach ($scenes as $scene) {
             $actNumber = $scene->act ?? 1;
-            
+
             // Fallback for legacy data or if not set
             if ($actNumber === 1 && preg_match('/Ato (\d+)/', $scene->title, $matches)) {
                 $actNumber = (int) $matches[1];
             }
-            
-            if (!isset($acts[$actNumber])) {
+
+            if (! isset($acts[$actNumber])) {
                 $acts[$actNumber] = [
                     'title' => "Ato {$actNumber}",
-                    'scenes' => []
+                    'scenes' => [],
                 ];
             }
-            
+
             $acts[$actNumber]['scenes'][] = $scene;
         }
-        
+
         ksort($acts);
-        
+
         return $acts;
     }
 }

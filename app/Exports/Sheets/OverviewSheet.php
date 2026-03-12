@@ -4,11 +4,11 @@ namespace App\Exports\Sheets;
 
 use App\Models\Project;
 use Maatwebsite\Excel\Concerns\FromArray;
-use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class OverviewSheet implements FromArray, WithTitle, WithStyles
+class OverviewSheet implements FromArray, WithStyles, WithTitle
 {
     protected $project;
 

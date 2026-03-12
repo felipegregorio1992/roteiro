@@ -15,12 +15,12 @@ class ExcelData extends Model
         'project_id',
         'file_name',
         'headers',
-        'data'
+        'data',
     ];
 
     protected $casts = [
         'headers' => 'array',
-        'data' => 'array'
+        'data' => 'array',
     ];
 
     public function user(): BelongsTo

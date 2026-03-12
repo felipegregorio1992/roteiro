@@ -12,7 +12,7 @@ class Project extends Model
     protected $fillable = [
         'name',
         'description',
-        'user_id'
+        'user_id',
     ];
 
     public function user()
@@ -34,4 +34,4 @@ class Project extends Model
     {
         return $this->hasMany(Episode::class);
     }
-} 
+}
