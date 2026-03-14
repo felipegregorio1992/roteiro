@@ -9,6 +9,9 @@ class RichEditor {
             toolbar: options.toolbar || ['bold', 'italic', 'underline', 'link', 'list'],
             placeholder: options.placeholder || 'Digite aqui...',
             maxLength: options.maxLength || null,
+            containerClass: options.containerClass || '',
+            toolbarClass: options.toolbarClass || '',
+            editorClass: options.editorClass || '',
             ...options
         };
         
@@ -24,14 +27,14 @@ class RichEditor {
     createEditor() {
         // Criar container do editor
         this.editorContainer = document.createElement('div');
-        this.editorContainer.className = 'rich-editor border border-gray-300 rounded-lg overflow-hidden';
+        this.editorContainer.className = `rich-editor border border-gray-300 rounded-lg overflow-hidden ${this.options.containerClass}`.trim();
         
         // Criar toolbar
         this.createToolbar();
         
         // Criar área de edição
         this.editor = document.createElement('div');
-        this.editor.className = 'editor-content p-3 min-h-32 focus:outline-none';
+        this.editor.className = `editor-content p-3 min-h-32 focus:outline-none ${this.options.editorClass}`.trim();
         this.editor.contentEditable = true;
         this.editor.setAttribute('data-placeholder', this.options.placeholder);
         
@@ -49,7 +52,7 @@ class RichEditor {
     
     createToolbar() {
         this.toolbar = document.createElement('div');
-        this.toolbar.className = 'editor-toolbar bg-gray-50 border-b border-gray-300 p-2 flex flex-wrap gap-2';
+        this.toolbar.className = `editor-toolbar bg-gray-50 border-b border-gray-300 p-2 flex flex-wrap gap-2 ${this.options.toolbarClass}`.trim();
         
         const buttons = {
             bold: { icon: 'B', title: 'Negrito' },
@@ -286,6 +289,42 @@ class RichEditor {
             .rich-editor a {
                 color: #3b82f6;
                 text-decoration: underline;
+            }
+
+            .word-editor {
+                border-color: #e5e7eb;
+                background: #f3f4f6;
+            }
+
+            .word-editor .editor-toolbar {
+                background: #ffffff;
+                border-color: #e5e7eb;
+                position: sticky;
+                top: 0;
+                z-index: 10;
+            }
+
+            .word-editor .editor-content {
+                font-family: Calibri, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+                font-size: 16px;
+                line-height: 1.6;
+                background: #ffffff;
+                max-width: 850px;
+                margin: 0 auto;
+                min-height: 520px;
+                padding: 48px 56px;
+                border-radius: 12px;
+                box-shadow: 0 1px 2px rgba(0,0,0,.06);
+                border: 1px solid #e5e7eb;
+            }
+
+            .word-editor .toolbar-button {
+                background: #ffffff;
+                border-color: #e5e7eb;
+            }
+
+            .word-editor .toolbar-button:hover {
+                background: #f3f4f6;
             }
         `;
         

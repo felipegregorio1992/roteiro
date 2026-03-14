@@ -62,7 +62,7 @@ class CharacterController extends BaseController
         }
 
         // Autorização via Policy
-        $this->authorize('view', $project);
+        $this->authorize('update', $project);
 
         return view('characters.create', compact('project'));
     }

@@ -10,7 +10,6 @@ use App\Models\Project;
 use App\Services\EpisodeService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class EpisodeController extends Controller
 {
@@ -42,7 +41,7 @@ class EpisodeController extends Controller
     public function create(Request $request)
     {
         $project = $this->getProjectOrAbort($request);
-        $this->authorize('view', $project);
+        $this->authorize('update', $project);
         $this->authorize('create', Episode::class);
 
         // Calculate next episode number
@@ -53,7 +52,6 @@ class EpisodeController extends Controller
         $nextEpisodeNumber = $lastEpisode ? ($lastEpisode->episode_number + 1) : 1;
 
         $characters = Character::where('project_id', $project->id)
-            ->where('user_id', Auth::id())
             ->orderBy('name', 'asc')
             ->get();
 
@@ -92,15 +90,11 @@ class EpisodeController extends Controller
         $this->authorize('view', $episode);
 
         $project = $this->getProjectOrAbort($request);
+        $this->authorize('view', $project);
 
         // Verifica se o episódio pertence ao projeto
         if ($episode->project_id != $project->id) {
             abort(404, 'Episódio não encontrado neste projeto.');
-        }
-
-        // Verifica se o usuário tem acesso ao projeto
-        if ($project->user_id !== Auth::id()) {
-            abort(403, 'Você não tem permissão para acessar este projeto.');
         }
 
         $episode->load(['characters' => function ($query) {
@@ -120,19 +114,14 @@ class EpisodeController extends Controller
         $this->authorize('update', $episode);
 
         $project = $this->getProjectOrAbort($request);
+        $this->authorize('view', $project);
 
         // Verifica se o episódio pertence ao projeto
         if ($episode->project_id != $project->id) {
             abort(404, 'Episódio não encontrado neste projeto.');
         }
 
-        // Verifica se o usuário tem acesso ao projeto
-        if ($project->user_id !== Auth::id()) {
-            abort(403, 'Você não tem permissão para acessar este projeto.');
-        }
-
         $characters = Character::where('project_id', $project->id)
-            ->where('user_id', Auth::id())
             ->orderBy('name', 'asc')
             ->get();
 
@@ -170,6 +159,7 @@ class EpisodeController extends Controller
         $this->authorize('delete', $episode);
 
         $project = $this->getProjectOrAbort($request);
+        $this->authorize('view', $project);
 
         // Verifica se o episódio pertence ao projeto
         if ($episode->project_id != $project->id) {

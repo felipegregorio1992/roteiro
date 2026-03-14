@@ -52,35 +52,114 @@
                 </div>
             @endif
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 space-y-4">
-                    <div>
-                        <h3 class="text-lg font-medium text-gray-900">Enviar arquivos</h3>
-                        <p class="text-sm text-gray-500">Você pode enviar até 10 arquivos por vez (máx. 25MB cada).</p>
-                    </div>
-
-                    <form action="{{ route('projects.files.store', ['project' => $project->id]) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
-                        @csrf
-
+            @can('update', $project)
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 space-y-4">
                         <div>
-                            <label for="files" class="block text-sm font-medium text-gray-700">Selecione os arquivos</label>
-                            <input type="file" name="files[]" id="files" required multiple
-                                   class="mt-1 block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md">
-                            <p class="mt-1 text-xs text-gray-500">Tipos aceitos: PDF, Word, TXT, Excel, CSV, imagens e ZIP.</p>
+                            <h3 class="text-lg font-medium text-gray-900">Enviar arquivos</h3>
+                            <p class="text-sm text-gray-500">Você pode enviar até 10 arquivos por vez (máx. 25MB cada).</p>
                         </div>
 
-                        <div class="flex justify-end">
-                            <button type="submit"
-                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                Enviar
-                            </button>
-                        </div>
-                    </form>
+                        <form action="{{ route('projects.files.store', ['project' => $project->id]) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                            @csrf
+
+                            <div>
+                                <label for="files" class="block text-sm font-medium text-gray-700">Selecione os arquivos</label>
+                                <input type="file" name="files[]" id="files" required multiple
+                                       class="mt-1 block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md">
+                                <p class="mt-1 text-xs text-gray-500">Tipos aceitos: PDF, Word, TXT, Excel, CSV, imagens e ZIP.</p>
+                            </div>
+
+                            <div class="flex justify-end">
+                                <button type="submit"
+                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    Enviar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-            </div>
+            @endcan
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
+                    @can('update', $project)
+                    <div class="flex items-center justify-between gap-4 mb-4">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900">Documentos</h3>
+                            <p class="text-sm text-gray-500">Escreva como no Word e salve dentro do projeto.</p>
+                        </div>
+                        @if(!empty($editingDocument))
+                            <a href="{{ route('projects.files.index', ['project' => $project->id]) }}"
+                               class="text-sm text-gray-600 hover:text-gray-900">
+                                Cancelar edição
+                            </a>
+                        @endif
+                    </div>
+
+                    <div class="rounded-xl border border-gray-200 bg-gray-50">
+                        <div class="p-4 border-b border-gray-200 flex items-center justify-between gap-4">
+                            <div class="min-w-0">
+                                <div class="text-sm font-medium text-gray-900 truncate">
+                                    {{ !empty($editingDocument) ? 'Editando: '.($editingDocument['original_name'] ?? '') : 'Novo documento' }}
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    Salva como arquivo HTML na área de Arquivos do roteiro
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                @if(!empty($editingDocument))
+                                    <a href="{{ route('projects.files.download', ['project' => $project->id, 'storedName' => $editingDocument['stored_name']]) }}"
+                                       class="inline-flex items-center px-3 py-2 rounded-lg bg-white text-gray-700 hover:bg-gray-100 text-sm font-medium border border-gray-200">
+                                        Baixar
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+
+                        <form method="POST"
+                              action="{{ !empty($editingDocument) ? route('projects.documents.update', ['project' => $project->id, 'storedName' => $editingDocument['stored_name']]) : route('projects.documents.store', ['project' => $project->id]) }}"
+                              class="p-4 space-y-4">
+                            @csrf
+                            @if(!empty($editingDocument))
+                                @method('PUT')
+                            @endif
+
+                            <div>
+                                <label for="doc_title" class="block text-sm font-medium text-gray-700">Nome do documento</label>
+                                <input id="doc_title"
+                                       name="title"
+                                       type="text"
+                                       required
+                                       value="{{ old('title', !empty($editingDocument) ? pathinfo((string) ($editingDocument['original_name'] ?? ''), PATHINFO_FILENAME) : '') }}"
+                                       class="mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500" />
+                            </div>
+
+                            <div class="rounded-xl bg-gray-100 p-6">
+                                <div class="mx-auto w-full max-w-4xl">
+                                    <div class="rounded-xl bg-white shadow-sm border border-gray-200">
+                                        <div class="p-6">
+                                            <textarea id="doc_content"
+                                                      name="content"
+                                                      class="w-full min-h-[420px] rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                                                      data-word-editor="1"
+                                                      required></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end gap-2">
+                                <button type="submit"
+                                        class="inline-flex items-center px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 text-sm font-medium">
+                                    Salvar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    @endcan
+
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Arquivos do roteiro</h3>
 
                     @if($files->isEmpty())
@@ -115,6 +194,10 @@
                                         $iconBg = 'bg-red-100';
                                         $iconText = 'text-red-700';
                                     } elseif (in_array($ext, ['doc', 'docx', 'rtf', 'txt'], true)) {
+                                        $typeLabel = 'Documento';
+                                        $iconBg = 'bg-blue-100';
+                                        $iconText = 'text-blue-700';
+                                    } elseif (in_array($ext, ['html'], true)) {
                                         $typeLabel = 'Documento';
                                         $iconBg = 'bg-blue-100';
                                         $iconText = 'text-blue-700';
@@ -162,6 +245,15 @@
                                             </div>
 
                                             <div class="mt-4 flex items-center justify-end gap-2">
+                                                @can('update', $project)
+                                                    @if($ext === 'html')
+                                                        <a href="{{ route('projects.files.index', ['project' => $project->id, 'doc' => $file['stored_name']]) }}"
+                                                           class="inline-flex items-center px-3 py-2 rounded-lg bg-white text-gray-700 hover:bg-gray-100 text-sm font-medium border border-gray-200">
+                                                            Editar
+                                                        </a>
+                                                    @endif
+                                                @endcan
+
                                                 <a href="{{ route('projects.files.download', ['project' => $project->id, 'storedName' => $file['stored_name']]) }}"
                                                    class="inline-flex items-center px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-sm font-medium">
                                                     Baixar
@@ -189,4 +281,18 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const textarea = document.getElementById('doc_content');
+            if (!textarea) return;
+            textarea.value = @json(old('content', !empty($editingDocument) ? (string) ($editingDocument['content'] ?? '') : ''));
+            if (!window.RichEditor) return;
+            new window.RichEditor(textarea, {
+                toolbar: ['bold', 'italic', 'underline', 'link', 'list', 'quote', 'clear'],
+                placeholder: 'Comece a escrever...',
+                containerClass: 'word-editor',
+            });
+        });
+    </script>
 </x-app-layout>

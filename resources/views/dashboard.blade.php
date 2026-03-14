@@ -19,6 +19,52 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            @if($pendingInvitations->isNotEmpty())
+                <div class="card mb-8 animate-fade-in">
+                    <div class="p-6">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">Convites pendentes</h3>
+                                <p class="text-sm text-gray-600 mt-1">
+                                    Você tem {{ $pendingInvitations->count() }} convite(s) para aceitar ou rejeitar.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 space-y-4">
+                            @foreach($pendingInvitations as $invitation)
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+                                    <div>
+                                        <div class="text-sm font-semibold text-gray-900">
+                                            {{ $invitation->project?->name ?? 'Projeto indisponível' }}
+                                        </div>
+                                        <div class="text-xs text-gray-600 mt-1">
+                                            Convite de {{ $invitation->invitedBy?->name ?? 'Usuário' }}
+                                            • Nível: {{ $invitation->role === 'editor' ? 'Editor' : 'Leitor' }}
+                                        </div>
+                                    </div>
+
+                                    <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                                        <form method="POST" action="{{ route('invites.accept.by-id', $invitation) }}">
+                                            @csrf
+                                            <button type="submit" class="btn btn-primary btn-sm">
+                                                Aceitar
+                                            </button>
+                                        </form>
+                                        <form method="POST" action="{{ route('invites.reject.by-id', $invitation) }}">
+                                            @csrf
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                Rejeitar
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             @if($projects->isEmpty())
                 <div class="text-center py-16 card animate-fade-in">
                     <div class="mx-auto w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mb-6">
@@ -56,23 +102,27 @@
                                         </div>
                                     </div>
                                     <div class="flex space-x-2">
-                                        <a href="{{ route('projects.edit', $project) }}" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                            </svg>
-                                        </a>
-                                        <form action="{{ route('projects.destroy', $project) }}" method="POST" class="inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200" 
-                                                    onclick="return confirm('Tem certeza que deseja excluir este roteiro?')">
+                                        @if(auth()->user()?->can('update', $project))
+                                            <a href="{{ route('projects.edit', $project) }}" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                          d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                 </svg>
-                                            </button>
-                                        </form>
+                                            </a>
+                                        @endif
+                                        @if(auth()->id() === $project->user_id)
+                                            <form action="{{ route('projects.destroy', $project) }}" method="POST" class="inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200" 
+                                                        onclick="return confirm('Tem certeza que deseja excluir este roteiro?')">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </div>
                                 
@@ -129,6 +179,20 @@
                                             <span class="font-medium">Arquivos</span>
                                         </div>
                                     </a>
+                                    @if(auth()->id() === $project->user_id)
+                                        <a href="{{ route('projects.share', $project) }}" 
+                                           class="block p-4 bg-gradient-to-r from-indigo-50 to-indigo-100 hover:from-indigo-100 hover:to-indigo-200 rounded-xl transition-all duration-200 hover:shadow-md group">
+                                            <div class="flex items-center text-indigo-700 group-hover:text-indigo-800">
+                                                <div class="bg-indigo-200 rounded-lg p-2 mr-3 group-hover:bg-indigo-300 transition-colors duration-200">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                                    </svg>
+                                                </div>
+                                                <span class="font-medium">Compartilhar</span>
+                                            </div>
+                                        </a>
+                                    @endif
                                 </div>
                             </div>
                         </div>

@@ -39,6 +39,17 @@ Route::middleware(['auth', 'throttle:100,1'])->group(function () {
         ->name('projects.files.store');
     Route::get('/projects/{project}/files/{storedName}', [ProjectController::class, 'filesDownload'])->name('projects.files.download');
     Route::delete('/projects/{project}/files/{storedName}', [ProjectController::class, 'filesDestroy'])->name('projects.files.destroy');
+    Route::post('/projects/{project}/documents', [ProjectController::class, 'documentsStore'])->name('projects.documents.store');
+    Route::put('/projects/{project}/documents/{storedName}', [ProjectController::class, 'documentsUpdate'])->name('projects.documents.update');
+
+    Route::get('/projects/{project}/share', [ProjectController::class, 'share'])->name('projects.share');
+    Route::post('/projects/{project}/invites', [ProjectController::class, 'invitesStore'])->name('projects.invites.store');
+    Route::delete('/projects/{project}/invites/{invitation}', [ProjectController::class, 'invitesDestroy'])->name('projects.invites.destroy');
+    Route::patch('/projects/{project}/members/{user}', [ProjectController::class, 'membersUpdate'])->name('projects.members.update');
+    Route::delete('/projects/{project}/members/{user}', [ProjectController::class, 'membersDestroy'])->name('projects.members.destroy');
+    Route::get('/invites/{token}', [ProjectController::class, 'acceptInvite'])->name('invites.accept');
+    Route::post('/invites/{invitation}/accept', [ProjectController::class, 'acceptInviteById'])->name('invites.accept.by-id');
+    Route::post('/invites/{invitation}/reject', [ProjectController::class, 'rejectInviteById'])->name('invites.reject.by-id');
 
     // Rotas para importação de Excel com rate limiting específico
     Route::get('/excel', [ExcelController::class, 'index'])->name('excel.index');

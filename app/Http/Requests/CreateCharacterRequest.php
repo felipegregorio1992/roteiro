@@ -17,7 +17,7 @@ class CreateCharacterRequest extends FormRequest
         $projectId = $this->input('project_id');
         $project = Project::find($projectId);
 
-        return $project && $project->user_id === Auth::id();
+        return $project && Auth::user() && Auth::user()->can('update', $project);
     }
 
     /**

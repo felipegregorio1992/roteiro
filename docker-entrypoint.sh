@@ -5,11 +5,11 @@ echo "Configurando ambiente..."
 
 # Definir valores padrão para variáveis críticas
 export DB_CONNECTION=${DB_CONNECTION:-pgsql}
-export DB_HOST=${DB_HOST:-dpg-cv7nv52n91rc739dju2g-a.oregon-postgres.render.com}
 export DB_PORT=${DB_PORT:-5432}
-export DB_DATABASE=${DB_DATABASE:-linha_do_tempo}
-export DB_USERNAME=${DB_USERNAME:-linha_do_tempo_user}
-export DB_PASSWORD=${DB_PASSWORD:-4E5z58jML5i3WywHYCqLgsWMiPI40Cji}
+export DB_HOST=${DB_HOST:-}
+export DB_DATABASE=${DB_DATABASE:-}
+export DB_USERNAME=${DB_USERNAME:-}
+export DB_PASSWORD=${DB_PASSWORD:-}
 
 # Verificar variáveis obrigatórias
 required_vars=(
@@ -28,8 +28,9 @@ for var in "${required_vars[@]}"; do
     fi
 done
 
-# Criar arquivo .env com as variáveis de ambiente
-cat << EOF > .env
+# Criar arquivo .env apenas se ainda não existir (evita sobrescrever configurações locais)
+if [ ! -f .env ]; then
+    cat << EOF > .env
 APP_NAME="${APP_NAME:-Linha do Tempo}"
 APP_ENV=${APP_ENV:-production}
 APP_KEY=${APP_KEY}
@@ -59,6 +60,7 @@ REDIS_HOST=${REDIS_HOST:-127.0.0.1}
 REDIS_PASSWORD=${REDIS_PASSWORD:-null}
 REDIS_PORT=${REDIS_PORT:-6379}
 EOF
+fi
 
 # Função para testar conexão com o banco
 test_db_connection() {

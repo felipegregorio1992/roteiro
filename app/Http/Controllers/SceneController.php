@@ -48,11 +48,10 @@ class SceneController extends Controller
         $project = $this->getProjectOrAbort($request);
         $episodeId = $request->input('episode_id');
 
-        $this->authorize('view', $project);
+        $this->authorize('update', $project);
         $this->authorize('create', Scene::class);
 
         $characters = Character::where('project_id', $project->id)
-            ->where('user_id', Auth::id())
             ->orderBy('name', 'asc')
             ->get();
 
@@ -103,11 +102,6 @@ class SceneController extends Controller
             abort(404, 'Cena não encontrada neste projeto.');
         }
 
-        // Verifica se o usuário tem acesso ao projeto
-        if ($project->user_id !== Auth::id()) {
-            abort(403, 'Você não tem permissão para acessar este projeto.');
-        }
-
         $scene->load(['characters' => function ($query) {
             $query->orderBy('name', 'asc');
         }]);
@@ -129,13 +123,7 @@ class SceneController extends Controller
             abort(404, 'Cena não encontrada neste projeto.');
         }
 
-        // Verifica se o usuário tem acesso ao projeto
-        if ($project->user_id !== Auth::id()) {
-            abort(403, 'Você não tem permissão para acessar este projeto.');
-        }
-
         $characters = Character::where('project_id', $project->id)
-            ->where('user_id', Auth::id())
             ->orderBy('name', 'asc')
             ->get();
 
@@ -209,9 +197,7 @@ class SceneController extends Controller
         $validated = $request->validated();
 
         $project = Project::findOrFail($validated['project_id']);
-        if ($project->user_id !== Auth::id()) {
-            abort(403, 'Você não tem permissão para acessar este projeto.');
-        }
+        $this->authorize('update', $project);
 
         $scene = $this->sceneService->createAct(
             $validated['project_id'],

@@ -14,6 +14,14 @@ abstract class BaseController extends Controller
     {
         $project = Project::findOrFail($projectId);
 
+        if ($project->user_id === $userId) {
+            return $project;
+        }
+
+        if ($project->members()->whereKey($userId)->exists()) {
+            return $project;
+        }
+
         if ($project->user_id !== $userId) {
             abort(403, 'Você não tem permissão para acessar este projeto.');
         }

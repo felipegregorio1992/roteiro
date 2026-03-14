@@ -38,8 +38,6 @@ class ScriptImport implements ToCollection
         $totalEpisodes = $maxColumns > 1 ? $maxColumns - 1 : 1;
 
         DB::transaction(function () use ($rows, $totalEpisodes) {
-            $this->clearProjectData();
-
             // Cria os episódios
             $episodeIds = $this->createEpisodes($totalEpisodes);
 
@@ -51,31 +49,24 @@ class ScriptImport implements ToCollection
         });
     }
 
-    protected function clearProjectData()
-    {
-        // Remove relações antigas
-        DB::table('character_episode')
-            ->join('episodes', 'episodes.id', '=', 'character_episode.episode_id')
-            ->where('episodes.project_id', $this->projectId)
-            ->delete();
-
-        Episode::where('project_id', $this->projectId)->delete();
-        Character::where('project_id', $this->projectId)->delete();
-    }
-
     protected function createEpisodes($totalEpisodes)
     {
         $episodeIds = [];
         for ($i = 1; $i <= $totalEpisodes; $i++) {
-            $episode = Episode::create([
-                'title' => "Episódio {$i}",
-                'project_id' => $this->projectId,
-                'user_id' => Auth::id(),
-                'description' => '',
-                'duration' => 60,
-                'order' => $i,
-                'episode_number' => $i,
-            ]);
+            $episode = Episode::updateOrCreate(
+                [
+                    'project_id' => $this->projectId,
+                    'episode_number' => $i,
+                ],
+                [
+                    'user_id' => Auth::id(),
+                    'title' => "Episódio {$i}",
+                    'description' => '',
+                    'duration' => 60,
+                    'order' => $i,
+                ]
+            );
+
             $episodeIds[$i] = $episode->id;
         }
 
@@ -93,11 +84,15 @@ class ScriptImport implements ToCollection
                 continue;
             }
 
-            $character = Character::create([
-                'name' => $characterName,
-                'project_id' => $this->projectId,
-                'user_id' => Auth::id(),
-            ]);
+            $character = Character::firstOrCreate(
+                [
+                    'project_id' => $this->projectId,
+                    'name' => $characterName,
+                ],
+                [
+                    'user_id' => Auth::id(),
+                ]
+            );
 
             // Para cada coluna (episódio)
             for ($i = 1; $i <= $totalEpisodes; $i++) {
@@ -116,7 +111,11 @@ class ScriptImport implements ToCollection
         }
 
         if (! empty($dialoguesToInsert)) {
-            DB::table('character_episode')->insert($dialoguesToInsert);
+            DB::table('character_episode')->upsert(
+                $dialoguesToInsert,
+                ['character_id', 'episode_id'],
+                ['dialogue', 'updated_at']
+            );
         }
     }
 

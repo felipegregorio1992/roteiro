@@ -20,7 +20,12 @@ class EpisodePolicy
      */
     public function view(User $user, Episode $episode): bool
     {
-        return $user->id === $episode->user_id;
+        $project = $episode->project;
+        if (! $project) {
+            return false;
+        }
+
+        return $user->can('view', $project);
     }
 
     /**
@@ -36,7 +41,12 @@ class EpisodePolicy
      */
     public function update(User $user, Episode $episode): bool
     {
-        return $user->id === $episode->user_id;
+        $project = $episode->project;
+        if (! $project) {
+            return false;
+        }
+
+        return $user->can('update', $project);
     }
 
     /**
@@ -44,7 +54,7 @@ class EpisodePolicy
      */
     public function delete(User $user, Episode $episode): bool
     {
-        return $user->id === $episode->user_id;
+        return $this->update($user, $episode);
     }
 
     /**
@@ -52,7 +62,7 @@ class EpisodePolicy
      */
     public function restore(User $user, Episode $episode): bool
     {
-        return $user->id === $episode->user_id;
+        return $this->update($user, $episode);
     }
 
     /**
@@ -60,6 +70,6 @@ class EpisodePolicy
      */
     public function forceDelete(User $user, Episode $episode): bool
     {
-        return $user->id === $episode->user_id;
+        return $this->update($user, $episode);
     }
 }

@@ -38,9 +38,8 @@ class CacheService
     {
         $cacheKey = "project_characters_{$projectId}_{$userId}";
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($projectId, $userId) {
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($projectId) {
             return Character::where('project_id', $projectId)
-                ->where('user_id', $userId)
                 ->with(['scenes' => function ($query) {
                     $query->orderBy('order', 'asc');
                 }])
@@ -56,9 +55,8 @@ class CacheService
     {
         $cacheKey = "project_scenes_{$projectId}_{$userId}";
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($projectId, $userId) {
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($projectId) {
             return Scene::where('project_id', $projectId)
-                ->where('user_id', $userId)
                 ->with(['characters' => function ($query) {
                     $query->select('characters.*', 'character_scene.dialogue')
                         ->orderBy('name', 'asc');
@@ -75,6 +73,9 @@ class CacheService
     {
         return Cache::remember("user_projects_{$userId}", self::CACHE_TTL, function () use ($userId) {
             return Project::where('user_id', $userId)
+                ->orWhereHas('members', function ($query) use ($userId) {
+                    $query->whereKey($userId);
+                })
                 ->withCount(['characters', 'scenes'])
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -88,9 +89,8 @@ class CacheService
     {
         $cacheKey = "character_act_matrix_{$projectId}_{$userId}";
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($projectId, $userId) {
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($projectId) {
             $characters = Character::where('project_id', $projectId)
-                ->where('user_id', $userId)
                 ->orderBy('name')
                 ->get();
 
@@ -129,16 +129,28 @@ class CacheService
      */
     public static function clearProjectCache(int $projectId, int $userId): void
     {
-        $keys = [
-            "project_stats_{$projectId}",
-            "project_characters_{$projectId}_{$userId}",
-            "project_scenes_{$projectId}_{$userId}",
-            "character_act_matrix_{$projectId}_{$userId}",
-            "user_projects_{$userId}",
-        ];
+        $project = Project::with(['members:id'])->find($projectId);
+        if (! $project) {
+            return;
+        }
 
-        foreach ($keys as $key) {
-            Cache::forget($key);
+        $userIds = collect([$project->user_id, $userId])
+            ->merge($project->members->pluck('id'))
+            ->unique()
+            ->values();
+
+        foreach ($userIds as $uid) {
+            $keys = [
+                "project_stats_{$projectId}",
+                "project_characters_{$projectId}_{$uid}",
+                "project_scenes_{$projectId}_{$uid}",
+                "character_act_matrix_{$projectId}_{$uid}",
+                "user_projects_{$uid}",
+            ];
+
+            foreach ($keys as $key) {
+                Cache::forget($key);
+            }
         }
     }
 
@@ -147,8 +159,19 @@ class CacheService
      */
     public static function clearProjectScenesCache(int $projectId, int $userId): void
     {
-        $key = "project_scenes_{$projectId}_{$userId}";
-        Cache::forget($key);
+        $project = Project::with(['members:id'])->find($projectId);
+        if (! $project) {
+            return;
+        }
+
+        $userIds = collect([$project->user_id])
+            ->merge($project->members->pluck('id'))
+            ->unique()
+            ->values();
+
+        foreach ($userIds as $uid) {
+            Cache::forget("project_scenes_{$projectId}_{$uid}");
+        }
     }
 
     /**

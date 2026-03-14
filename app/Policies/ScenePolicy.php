@@ -20,7 +20,12 @@ class ScenePolicy
      */
     public function view(User $user, Scene $scene): bool
     {
-        return $user->id === $scene->user_id;
+        $project = $scene->project;
+        if (! $project) {
+            return false;
+        }
+
+        return $user->can('view', $project);
     }
 
     /**
@@ -36,7 +41,12 @@ class ScenePolicy
      */
     public function update(User $user, Scene $scene): bool
     {
-        return $user->id === $scene->user_id;
+        $project = $scene->project;
+        if (! $project) {
+            return false;
+        }
+
+        return $user->can('update', $project);
     }
 
     /**
@@ -44,7 +54,12 @@ class ScenePolicy
      */
     public function delete(User $user, Scene $scene): bool
     {
-        return $user->id === $scene->user_id;
+        $project = $scene->project;
+        if (! $project) {
+            return false;
+        }
+
+        return $user->can('update', $project);
     }
 
     /**
@@ -52,7 +67,7 @@ class ScenePolicy
      */
     public function restore(User $user, Scene $scene): bool
     {
-        return $user->id === $scene->user_id;
+        return $this->update($user, $scene);
     }
 
     /**
@@ -60,6 +75,6 @@ class ScenePolicy
      */
     public function forceDelete(User $user, Scene $scene): bool
     {
-        return $user->id === $scene->user_id;
+        return $this->update($user, $scene);
     }
 }

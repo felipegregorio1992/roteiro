@@ -20,7 +20,12 @@ class CharacterPolicy
      */
     public function view(User $user, Character $character): bool
     {
-        return $user->id === $character->user_id;
+        $project = $character->project;
+        if (! $project) {
+            return false;
+        }
+
+        return $user->can('view', $project);
     }
 
     /**
@@ -36,7 +41,12 @@ class CharacterPolicy
      */
     public function update(User $user, Character $character): bool
     {
-        return $user->id === $character->user_id;
+        $project = $character->project;
+        if (! $project) {
+            return false;
+        }
+
+        return $user->can('update', $project);
     }
 
     /**
@@ -44,7 +54,7 @@ class CharacterPolicy
      */
     public function delete(User $user, Character $character): bool
     {
-        return $user->id === $character->user_id;
+        return $this->update($user, $character);
     }
 
     /**
@@ -52,7 +62,7 @@ class CharacterPolicy
      */
     public function restore(User $user, Character $character): bool
     {
-        return $user->id === $character->user_id;
+        return $this->update($user, $character);
     }
 
     /**
@@ -60,6 +70,6 @@ class CharacterPolicy
      */
     public function forceDelete(User $user, Character $character): bool
     {
-        return $user->id === $character->user_id;
+        return $this->update($user, $character);
     }
 }

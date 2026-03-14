@@ -9,6 +9,5 @@ Alpine.start();
 
 // Importar componentes de interface
 import './word-counter';
-import './auto-save';
 import './rich-editor';
 import './notifications';

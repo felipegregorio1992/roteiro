@@ -14,7 +14,7 @@ class UpdateProjectRequest extends FormRequest
     {
         $project = $this->route('project');
 
-        return $project && $project->user_id === Auth::id();
+        return $project && Auth::user() && Auth::user()->can('update', $project);
     }
 
     /**

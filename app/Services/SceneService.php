@@ -195,7 +195,6 @@ class SceneService
 
         // Update only the "header" scene (duration = 0) for this act
         $updated = Scene::where('project_id', $projectId)
-            ->where('user_id', Auth::id())
             ->where('act', $actNumber)
             ->where('duration', 0) // Identify act header
             ->update(['title' => $formattedTitle]);

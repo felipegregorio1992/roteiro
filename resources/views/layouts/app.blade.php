@@ -74,6 +74,14 @@
                         </div>
                     </div>
                 @endif
+
+                @if (session('error'))
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+                        <div class="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-200 px-4 py-3 rounded relative" role="alert">
+                            <span class="block sm:inline">{{ session('error') }}</span>
+                        </div>
+                    </div>
+                @endif
                 
                 {{ $slot }}
             </main>

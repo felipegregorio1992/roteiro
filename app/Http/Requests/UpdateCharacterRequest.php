@@ -20,7 +20,7 @@ class UpdateCharacterRequest extends FormRequest
         // Also check if the character belongs to the project
         $character = $this->route('character');
 
-        return $project && $project->user_id === Auth::id() && $character->project_id == $projectId;
+        return $project && Auth::user() && Auth::user()->can('update', $project) && $character->project_id == $projectId;
     }
 
     /**
